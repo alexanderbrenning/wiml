@@ -20,7 +20,7 @@ or \code{data.frame} (for inbound transformations).
 \description{
 Outbound or forward transformation refers to the mapping \eqn{T}
 from feature space into a transformed space (e.g., principal components space),
-and inbound or backward transformation is its inverse transformation \eqm{T^{1}}
+and inbound or backward transformation is its inverse transformation \eqn{T^{1}}
 back into feature space.
 }
 \details{

@@ -1,10 +1,9 @@
 
-
 #' Generic methods for forward (outbound) and backward (inbound) feature space transformation using warper objects
 #'
 #' Outbound or forward transformation refers to the mapping \eqn{T}
 #' from feature space into a transformed space (e.g., principal components space),
-#' and inbound or backward transformation is its inverse transformation \eqm{T^{1}}
+#' and inbound or backward transformation is its inverse transformation \eqn{T^{1}}
 #' back into feature space.
 #'
 #' @param object A \code{warper} object, such as a \code{\link{pca_warper}}
@@ -58,7 +57,7 @@ inbound.rotation_warper <- function(object, wdata = object$wdata) {
 #'
 #' Outbound or forward transformation refers to the mapping \eqn{T}
 #' from feature space into a transformed space (e.g., principal components space),
-#' and inbound or backward transformation is its inverse transformation \eqm{T^{1}}
+#' and inbound or backward transformation is its inverse transformation \eqn{T^{1}}
 #' back into feature space.
 #'
 #' @param object A \code{warper} object created by \code{\link{pca_warper}}
@@ -112,6 +111,7 @@ outbound.rotation_warper <- function(object, xdata = NULL) {
 #' @details The function will make an effort to ensure that there's no overlap
 #'     between \code{xvars}, \code{uvars} and \code{yvar}; however, ideally
 #'     these arguments should not overlap.
+#' @example examples/pca_warper.R
 #' @export
 pca_warper <- function(xdata, xvars, wvars = "PC", yvar, uvars = NULL, title = wvars) {
   xvars <- xvars[ !(xvars %in% uvars) ]
@@ -363,7 +363,7 @@ warp <- function(x, ...) {
 
 #' Transform data from feature space into a transformed space
 #'
-#' These methods apply the transformation \eqn{T} to data
+#' \code{warp} methods apply the transformation \eqn{T} to data
 #' in feature space - the result is, for example, the principal components
 #' representation of the data, if a \code{\link{pca_warper}} is used.
 #'
@@ -381,7 +381,7 @@ warp.data.frame <- function(x, warper) {
   return(x)
 }
 
-#' @describeIn warp.data.frame Does nothing - \code{warped_df} is already transformed
+#' @describeIn warp.data.frame Does nothing - \code{warped_df} has already been transformed
 #' @export
 warp.warped_df <- function(x, warper) {
   x
@@ -400,6 +400,7 @@ warp.warped_df <- function(x, warper) {
 #' @seealso \code{\link{warp}} for the forward transformation, and
 #'   \code{\link{pca_warper}} for an example of a simple warper function based
 #'   on the principal components transformation.
+#' @example examples/pca_warper.R
 #' @export
 unwarp <- function(x, ...) {
   UseMethod("unwarp")
@@ -420,6 +421,7 @@ unwarp <- function(x, ...) {
 #' @seealso \code{\link{warp}} for the forward transformation, and
 #'   \code{\link{pca_warper}} for an example of a simple warper function based
 #'   on the principal components transformation.
+#' @example examples/pca_warper.R
 #' @export
 unwarp.warped_df <- function(x, warper, force_unwarp = FALSE) {
   class(x) <- class(x)[class(x) != "warped_df"]
@@ -456,6 +458,7 @@ unwarp.data.frame <- function(x, warper = NULL, force_unwarp = FALSE) {
 #'   object. The \code{warped_model}'s \code{predict} (and other) methods
 #'   allow the user to use a \code{warped_model} as if it had been fitted
 #'   using the transformed data.
+#' @example examples/warp_fitted_model.R
 #' @export
 warp_fitted_model <- function(x, warper) {
   res <- list(fit = x, warper = warper)
@@ -484,6 +487,7 @@ warp_fitted_model <- function(x, warper) {
 #' @seealso \code{\link{warp_fitted_model}} for creating a warped machine-learning
 #'   model, and the \code{\link{predict}} method of your machine-learning model
 #'   for details on additional arguments and the returned values.
+#' @example examples/warp_fitted_model.R
 #' @export
 predict.warped_model <- function(object, newdata = NULL,
                                  force_unwarp = TRUE, ...) {
@@ -521,13 +525,14 @@ plot.warped_model <- function(object, ...) {
 }
 
 
-#' Plot of a PCA warper transformation object
+#' Plot a PCA warper transformation object
 #'
 #' This method plots standard PCA summary diagrams.
 #'
-#' @param object A [pca_warper] object.
+#' @param object A \code{\link{pca_warper}} object.
 #' @param col,bp.col Colours of \code{biplot} labels and \code{barplot} bars.
 #' @return Invisibly returns the result of the biplot call (this may change)
+#' @example examples/pca_warper.R
 #' @export
 plot.pca_warper <- function(object, col = c("white", "black"), bp.col = "lightblue") {
   par(mfrow = c(1,2))

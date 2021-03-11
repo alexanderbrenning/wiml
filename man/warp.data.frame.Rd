@@ -20,13 +20,13 @@
 A data frame with features in the transformed (e.g., PCA) space.
 }
 \description{
-These methods apply the transformation \eqn{T} to data
+\code{warp} methods apply the transformation \eqn{T} to data
 in feature space - the result is, for example, the principal components
 representation of the data, if a \code{\link{pca_warper}} is used.
 }
 \section{Functions}{
 \itemize{
-\item \code{warp.warped_df}: Does nothing - \code{warped_df} is already transformed
+\item \code{warp.warped_df}: Does nothing - \code{warped_df} has already been transformed
 }}
 
 \seealso{
