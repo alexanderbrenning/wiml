@@ -1,16 +1,28 @@
 Package: wiml
-Title: What the Package Does (One Line, Title Case)
+Title: Interpreting machine-learning models in transformed space
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    person(given = "Alexander",
+           family = "Brenning",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+           email = "alexander.brenning@uni-jena.de",
+           comment = c(ORCID = "0000-0001-6640-679X"))
+Description: Main effects plots (such as partial dependence and ALE plots) can 
+    be confusing and even misleading when dealing with large numbers of highly 
+    correlated features. Example applications include land cover classification 
+    using multitemporal satellite remote-sensing data or texture features derived 
+    from such imagery. This package introduces a simple and pragmatic approach to 
+    dealing with this problem. This approach can be especially beneficial in 
+    situations where features tend to be linearly dependent, or in other words, 
+    where principal components analysis seems like a reasonable approach.
+License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.1.9001
+Suggests:
+    iml
+Enhances:
+    iml
+URL: https://github.com/alexanderbrenning/wiml
+BugReports: https://github.com/alexanderbrenning/wiml/issues
