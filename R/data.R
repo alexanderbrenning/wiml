@@ -3,8 +3,8 @@
 #' This data set for multi-class classification contains inventoried fruit-tree
 #' crop types and multitemporal Landsat satellite data from the Maipo river
 #' basin in central Chile. And Landsat data is available for nine image dates
-#' from one growing season. This is a subset of the data used by Peña et al.
-#' (2015), who provie more detailed information on the data set (e.g., image
+#' from one growing season. This is a subset of the data used by Pena et al.
+#' (2015), who provide more detailed information on the data set (e.g., image
 #' dates).
 #'
 #' @details **Objective:** To predict crop type as the response variable based
@@ -23,7 +23,7 @@
 #'   each image date.}
 #'   \item{ndwi0*i*}{NDWI values, i.e. a moisture index (representing moisture
 #'   content of plants).} }
-#' @source Peña, M.A., and Brenning, A. 2015. Assessing fruit-tree crop
+#' @source Pena, M.A., and Brenning, A. 2015. Assessing fruit-tree crop
 #'   classification from Landsat-8 time series for the Maipo Valley, Chile.
 #'   *Remote Sensing of Environment*, 171: 234-44.
 #'   <https://doi.org/10.1016/j.rse.2015.10.029>

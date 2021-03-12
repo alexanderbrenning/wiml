@@ -5,23 +5,56 @@
 \alias{Gabor}
 \title{Rock glacier remote sensing using Gabor texture filters}
 \format{
-A data frame with 3403 rows and 49 variables.
-\describe{
-\item{class}{Factor variable indicating that the observation represents
-flow structures on a rock glacier (\code{"TRUE"}) or not
-(\code{"FALSE"}).}
-\item{...}{Terrain attributes and Gabor texture features as predictors.}
-}
+A data frame with 3403 grid cells (617
+from flow patterns and 2786 from other terrain outside of rock glaciers).
+(The flow patterns are from approximately 50 individual rock glaciers
+of varying size.) \describe{
+\item{class}{Factor variable (levels: \code{"TRUE"}, \code{"FALSE"}) representing the
+presence (\code{"TRUE"}) and absence (\code{"FALSE"}) of rock glacier flow patterns.}
+\item{x,y}{UTM x and y coordinates (not to be used as predictors)}
+\item{dem}{Elevation in metres above sea level (m a.s.l.)}
+\item{slope}{Local slope angle in degrees}
+\item{cslope}{Slope angle of the upslope contributing area in degrees}
+\item{log.carea}{Logarithm (to the base 10) of the size of the upslope
+contributing area in m²}
+\item{log.cheight}{Logarithm (to the base 10) of the height of the upslope contributing area in m}
+\item{pisr}{Annual potential incoming solar radiation}
+\item{m30e\emph{i}g\emph{j}x}{Gabor feature with the following settings (see Brenning et al. 2012 for details): \emph{i} = axis ratio (1 or 2) of Gabor filter; \emph{j} = wavelength of Gabor filter (5, 10, 20, 30, or 50 m); \strong{x} = aggregation scheme (“min” = minimum; “max” = maximum; “rg” = range; “med” = median}}
 }
 \source{
 Brenning, A., Long, S. and Fieguth, P. 2012. Detecting rock glacier
-flow structures using Gabor filters and IKONOS imagery. Remote Sensing
-of Environment, 125: 227-237. https://doi.org/10.1016/j.rse.2012.07.005
+flow structures using Gabor filters and IKONOS imagery. \emph{Remote Sensing of
+Environment}, 125: 227-237. \url{https://doi.org/10.1016/j.rse.2012.07.005}
 }
 \usage{
 Gabor
 }
 \description{
-This is a subset of the data used by Brenning et al. (2012).
+This data set for binary classification tasks contains information on the
+presence/absence of flow structures related to the deformation of rock
+glaciers in the Andes of Santiago, and corresponding remotely-sensed texture
+attributes and terrain attributes as predictors. Rock glaciers are ice-debris
+landforms - the visible expression of creeping mountain permafrost.
+}
+\details{
+Texture attributes derived from high-resolution panchromatic IKONOS
+imagery form the largest group of features in this study, and terrain
+attributes are used as additional predictors. A ‘filter bank’ of Gabor
+filters is used since Gabor features are capable of detecting ‘zebra
+stripe’ type patterns that relate to the troughs and ridges typically found
+on rock glaciers. The second group of features represent topographic
+conditions, e.g. elevation, slope angle and size of the upslope
+contributing area. These are proxies for topoclimatic conditions that may
+relate to the formation and conservation of permafrost, and for talus
+supply to these ice-debris landforms.
+
+This data set is a subset of the data used by Brenning et al. (2012),
+specifically a subset of the Laguna Negra area. Note that areas that can
+“obviously” not present rock glaciers have been masked out (i.e. removed
+from the data set), e.g. steep slopes, in order to allow the classifier to
+focus on the “difficult” areas; see Brenning et al. (2012) for details.
+
+\strong{Objective:} To identify rock-glacier flow patterns based on the available
+texture and terrain attribute data.
 }
 \keyword{datasets}

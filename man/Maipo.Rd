@@ -3,29 +3,42 @@
 \docType{data}
 \name{Maipo}
 \alias{Maipo}
-\title{Maipo fruit-tree crop data}
+\title{\encoding{UTF-8}
+Remote sensing of fruit trees}
 \format{
 A data frame with 400 rows and 67 variables:
 \describe{
-\item{class}{Croptype \code{"crop1"} to \code{"crop4"} as a factor variable.}
-\item{utmx,utmy}{UTM x and y coordinates}
-\item{b12,...,b87}{Landsat reflectances: variable \code{b}ij corresponds to
-band j from image date i, where larger values of i indicate a date later
-in the season. See referenced paper for details.}
-\item{ndvi01,...,ndvi08}{NDVI values for each image date.}
-\item{ndwi01,...,ndwi}{NDWI values, i.e. a moisture index.}
-}
+\item{class}{Croptype \code{"crop1"} to \code{"crop4"} as a factor
+variable.}
+\item{utmx,utmy}{UTM x and y coordinates - not to be used as
+predictors.}
+\item{b\emph{ij}}{value of Landsat band \emph{j} in image \emph{i}; images are
+numbered from early season = 1 to late season = 9; see Peña et al. (2017)
+for details, e.g. image dates.}
+\item{ndvi0\emph{i}}{NDVI values (representing vegetation vigour) for
+each image date.}
+\item{ndwi0\emph{i}}{NDWI values, i.e. a moisture index (representing moisture
+content of plants).} }
 }
 \source{
-Peña, M.A., and Brenning, A. 2015. Assessing Fruit-Tree Crop
-Classification from Landsat-8 Time Series for the Maipo Valley, Chile.
-Remote Sensing of Environment 171: 234-44. \url{https://doi.org/10.1016/j.rse.2015.10.029}
+Peña, M.A., and Brenning, A. 2015. Assessing fruit-tree crop
+classification from Landsat-8 time series for the Maipo Valley, Chile.
+\emph{Remote Sensing of Environment}, 171: 234-44.
+\url{https://doi.org/10.1016/j.rse.2015.10.029}
 }
 \usage{
 Maipo
 }
 \description{
-Maipo data - a subset of the data used by Pena and Brenning (2015), aggregated
-to the field level, i.e. each field or parcel is one observation.
+This data set for multi-class classification contains inventoried fruit-tree
+crop types and multitemporal Landsat satellite data from the Maipo river
+basin in central Chile. And Landsat data is available for nine image dates
+from one growing season. This is a subset of the data used by Peña et al.
+(2015), who provie more detailed information on the data set (e.g., image
+dates).
+}
+\details{
+\strong{Objective:} To predict crop type as the response variable based
+on the available optical remote sensing data.
 }
 \keyword{datasets}
