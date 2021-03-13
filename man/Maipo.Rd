@@ -24,6 +24,7 @@ Pena, M.A., and Brenning, A. 2015. Assessing fruit-tree crop
 classification from Landsat-8 time series for the Maipo Valley, Chile.
 \emph{Remote Sensing of Environment}, 171: 234-44.
 \url{https://doi.org/10.1016/j.rse.2015.10.029}
+@export
 }
 \usage{
 Maipo

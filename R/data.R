@@ -27,6 +27,7 @@
 #'   classification from Landsat-8 time series for the Maipo Valley, Chile.
 #'   *Remote Sensing of Environment*, 171: 234-44.
 #'   <https://doi.org/10.1016/j.rse.2015.10.029>
+#'  @export
 "Maipo"
 
 
@@ -76,4 +77,5 @@
 #' @source Brenning, A., Long, S. and Fieguth, P. 2012. Detecting rock glacier
 #'   flow structures using Gabor filters and IKONOS imagery. *Remote Sensing of
 #'   Environment*, 125: 227-237. <https://doi.org/10.1016/j.rse.2012.07.005>
+#'  @export
 "Gabor"

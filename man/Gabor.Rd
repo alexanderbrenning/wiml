@@ -25,6 +25,7 @@ contributing area in m²}
 Brenning, A., Long, S. and Fieguth, P. 2012. Detecting rock glacier
 flow structures using Gabor filters and IKONOS imagery. \emph{Remote Sensing of
 Environment}, 125: 227-237. \url{https://doi.org/10.1016/j.rse.2012.07.005}
+@export
 }
 \usage{
 Gabor
