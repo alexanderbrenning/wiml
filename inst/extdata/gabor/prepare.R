@@ -28,4 +28,5 @@ d$dgl = NULL
 # Logical -> factor:
 d$class = factor(d$class)
 
-save(d, file = here::here("data/gabor.rda"))
+gabor <- d
+save(gabor, file = here::here("data/gabor.rda"))
