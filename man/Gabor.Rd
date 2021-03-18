@@ -5,13 +5,17 @@
 \alias{gabor}
 \title{Rock glacier remote sensing using Gabor texture filters}
 \format{
-A data frame with 3403 grid cells (617
-from flow patterns and 2786 from other terrain outside of rock glaciers).
+A data frame with 4656 grid cells (1290
+from flow patterns and 3366 from other terrain outside of
+rock glaciers) in two study areas (\code{area = "LN"}: 2499 grid cells;
+\code{area = "CAT"}: 2157 cells).
 (The flow patterns are from approximately 50 individual rock glaciers
 of varying size.) \describe{
 \item{class}{Factor variable (levels: \code{"TRUE"}, \code{"FALSE"}) representing the
 presence (\code{"TRUE"}) and absence (\code{"FALSE"}) of rock glacier flow patterns.}
 \item{x,y}{UTM x and y coordinates (not to be used as predictors)}
+\item{area}{Factor variable identifying one of the two study
+areas, \code{"LN"} or \code{"CAT"}.}
 \item{dem}{Elevation in metres above sea level (m a.s.l.)}
 \item{slope}{Local slope angle in degrees}
 \item{cslope}{Slope angle of the upslope contributing area in degrees}

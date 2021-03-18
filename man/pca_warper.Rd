@@ -4,7 +4,17 @@
 \alias{pca_warper}
 \title{Principal components transformation of feature space}
 \usage{
-pca_warper(xdata, xvars, wvars = "PC", yvar, uvars = NULL, title = wvars)
+pca_warper(
+  xdata,
+  xvars,
+  wvars = "PC",
+  yvar,
+  uvars = NULL,
+  center = TRUE,
+  scale = TRUE,
+  positive = TRUE,
+  title = wvars
+)
 }
 \arguments{
 \item{xdata}{A data frame containing the observations in the original feature space.}
@@ -19,6 +29,14 @@ will be appended as needed.}
 \item{yvar}{Name of the response variable (not to be transformed)}
 
 \item{uvars}{Names of additional variables that should remain untouched.}
+
+\item{scale, center}{Logical arguments indicating whether the data should
+be centered and then scales. Both should be turned on (\code{TRUE}), which is
+the default behaviour.}
+
+\item{positive}{Logical argument (default: \code{TRUE}) indicating whether
+the signs of the loadings should be adjusted so that the most
+strongly weighted PC gets a positive sign.}
 
 \item{title}{Optional name of the transformation, may be used for printing summaries
 or for plotting.}

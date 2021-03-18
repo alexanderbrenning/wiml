@@ -4,7 +4,17 @@
 \alias{strucpca_warper}
 \title{Structured principal components transformation of feature space}
 \usage{
-strucpca_warper(xdata, xvars, wvars = NULL, yvar, uvars = NULL, title = NULL)
+strucpca_warper(
+  xdata,
+  xvars,
+  wvars = NULL,
+  yvar,
+  uvars = NULL,
+  center = TRUE,
+  scale = TRUE,
+  positive = TRUE,
+  title = NULL
+)
 }
 \arguments{
 \item{xdata}{A data frame containing the observations in the original feature space.}
@@ -24,6 +34,18 @@ second principal compoment from first feature subset. If \code{NULL}, use
 
 \item{uvars}{Optional list of same length as \code{xvars} with names of additional
 variables that should remain untouched.}
+
+\item{center}{Logical arguments indicating whether the data should
+be centered and then scales. Both should be turned on (\code{TRUE}), which is
+the default behaviour.}
+
+\item{scale}{Logical arguments indicating whether the data should
+be centered and then scales. Both should be turned on (\code{TRUE}), which is
+the default behaviour.}
+
+\item{positive}{Logical argument (default: \code{TRUE}) indicating whether
+the signs of the loadings should be adjusted so that the most
+strongly weighted PC gets a positive sign.}
 
 \item{title}{Optional name of the transformation, may be used for printing summaries
 or for plotting.}

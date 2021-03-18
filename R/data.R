@@ -58,13 +58,17 @@
 #'   **Objective:** To identify rock-glacier flow patterns based on the available
 #'   texture and terrain attribute data.
 #'
-#' @format A data frame with 3403 grid cells (617
-#'   from flow patterns and 2786 from other terrain outside of rock glaciers).
+#' @format A data frame with 4656 grid cells (1290
+#'   from flow patterns and 3366 from other terrain outside of
+#'   rock glaciers) in two study areas (`area = "LN"`: 2499 grid cells;
+#'   `area = "CAT"`: 2157 cells).
 #'   (The flow patterns are from approximately 50 individual rock glaciers
 #'   of varying size.) \describe{
 #'   \item{class}{Factor variable (levels: `"TRUE"`, `"FALSE"`) representing the
 #'   presence (`"TRUE"`) and absence (`"FALSE"`) of rock glacier flow patterns.}
 #'   \item{x,y}{UTM x and y coordinates (not to be used as predictors)}
+#'   \item{area}{Factor variable identifying one of the two study
+#'   areas, `"LN"` or `"CAT"`.}
 #'   \item{dem}{Elevation in metres above sea level (m a.s.l.)}
 #'   \item{slope}{Local slope angle in degrees}
 #'   \item{cslope}{Slope angle of the upslope contributing area in degrees}
