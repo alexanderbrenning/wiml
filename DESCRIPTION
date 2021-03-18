@@ -26,3 +26,5 @@ Enhances:
     iml
 URL: https://github.com/alexanderbrenning/wiml
 BugReports: https://github.com/alexanderbrenning/wiml/issues
+Depends: 
+    R (>= 2.10)
