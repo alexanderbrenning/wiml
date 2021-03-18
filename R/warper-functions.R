@@ -139,7 +139,7 @@ pca_warper <- function(xdata, xvars, wvars = "PC", yvar, uvars = NULL,
                        title = wvars) {
   if (missing(xdata))
     stop("data frame 'xdata' must be specified")
-  if (missing(yvars))
+  if (missing(xvars))
     stop("predictor variables 'xvars' must be specified")
   if (missing(yvar))
     stop("response variable 'yvar' must be specified")
@@ -243,7 +243,7 @@ strucpca_warper <- function(xdata, xvars, wvars = NULL, yvar, uvars = NULL,
                             title = NULL) {
   if (missing(xdata))
     stop("data frame 'xdata' must be specified")
-  if (missing(yvars))
+  if (missing(xvars))
     stop("predictor variables 'xvars' must be specified")
   if (missing(yvar))
     stop("response variable 'yvar' must be specified")
@@ -335,7 +335,7 @@ pls_warper <- function(xdata, xvars, pvars, wvars = "resid", yvar, uvars = NULL,
                        title = wvars) {
   if (missing(xdata))
     stop("data frame 'xdata' must be specified")
-  if (missing(yvars))
+  if (missing(xvars))
     stop("predictor variables 'xvars' must be specified")
   if (missing(yvar))
     stop("response variable 'yvar' must be specified")
