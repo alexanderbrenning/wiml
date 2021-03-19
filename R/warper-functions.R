@@ -300,12 +300,14 @@ strucpca_warper <- function(xdata, xvars, wvars = NULL, yvar, uvars = NULL,
                            positive = positive[i])
     if (i == 1) {
       full_rotation <- wrp[[i]]$full_rotation
-      ctr <- wrp[[i]]$pca$center
-      scl <- wrp[[i]]$pca$scale
+      ctr <- wrp[[i]]$center
+      scl <- wrp[[i]]$scale
     } else {
       full_rotation <- lava::blockdiag(full_rotation, wrp[[i]]$full_rotation)
-      ctr <- c(ctr, wrp[[i]]$pca$center)
-      scl <- c(scl, wrp[[i]]$pca$scale)
+      ctr <- c(ctr, wrp[[i]]$center)
+      scl <- c(scl, wrp[[i]]$scale)
+      # ...not $pca$center and $pca$scale, which are
+      # unused and FALSE!
     }
   }
 
