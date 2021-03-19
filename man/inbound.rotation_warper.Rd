@@ -5,14 +5,16 @@
 \alias{outbound.rotation_warper}
 \title{Methods for forward (outbound) and backward (inbound) feature space transformation using warper objects}
 \usage{
-\method{inbound}{rotation_warper}(object, wdata = object$wdata)
+\method{inbound}{rotation_warper}(object, wdata = object$wdata, ...)
 
-\method{outbound}{rotation_warper}(object, xdata = NULL)
+\method{outbound}{rotation_warper}(object, xdata = NULL, ...)
 }
 \arguments{
 \item{object}{A \code{warper} object.}
 
 \item{wdata}{A data frame containing data in transformed space.}
+
+\item{...}{Currently not used.}
 
 \item{xdata}{A data frame with features in the original, untransformed
 feature space.}

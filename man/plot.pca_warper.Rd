@@ -4,15 +4,19 @@
 \alias{plot.pca_warper}
 \title{Plot a PCA warper transformation object}
 \usage{
-\method{plot}{pca_warper}(object, col = c("white", "black"), bp.col = "lightblue")
+\method{plot}{pca_warper}(x, which = c(1:2), col = c("white", "black"), bp.col = "lightblue", ...)
 }
 \arguments{
-\item{object}{A \code{\link{pca_warper}} object.}
+\item{which}{Which plots to plot: screeplot (\code{1}), biplot (\code{2}).}
 
 \item{col, bp.col}{Colours of \code{biplot} labels and \code{barplot} bars.}
+
+\item{...}{Currently not used.}
+
+\item{object}{A \code{\link{pca_warper}} object.}
 }
 \value{
-Invisibly returns the result of the biplot call (this may change)
+Returns \code{NULL}
 }
 \description{
 This method plots standard PCA summary diagrams.
@@ -22,8 +26,7 @@ This method plots standard PCA summary diagrams.
 xvars <- c(paste("ndvi0", 1:8, sep = ""), paste("ndwi0", 1:8, sep = ""),
            paste("b", outer(1:8,2:7,paste,sep = ""), sep = ""))
 fo <- as.formula(paste("class ~", paste(xvars, collapse=" +" )))
-d <- Maipo[,all.vars(fo)]
-d[,xvars] <- scale(d[,xvars])
+d <- maipo
 
 wrp <- pca_warper(d, xvars = xvars, yvar = "class")
 plot(wrp)

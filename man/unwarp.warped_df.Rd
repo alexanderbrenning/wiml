@@ -5,9 +5,9 @@
 \alias{unwarp.data.frame}
 \title{Backtransform from transformed ('warped') to original feature space}
 \usage{
-\method{unwarp}{warped_df}(x, warper, force_unwarp = FALSE)
+\method{unwarp}{warped_df}(x, warper, force_unwarp = FALSE, ...)
 
-\method{unwarp}{data.frame}(x, warper = NULL, force_unwarp = FALSE)
+\method{unwarp}{data.frame}(x, warper = NULL, force_unwarp = FALSE, ...)
 }
 \arguments{
 \item{x}{The object to be backtransformed, for example a data frame or a \code{warped_df} object.}
@@ -37,8 +37,7 @@ transformation.
 xvars <- c(paste("ndvi0", 1:8, sep = ""), paste("ndwi0", 1:8, sep = ""),
            paste("b", outer(1:8,2:7,paste,sep = ""), sep = ""))
 fo <- as.formula(paste("class ~", paste(xvars, collapse=" +" )))
-d <- Maipo[,all.vars(fo)]
-d[,xvars] <- scale(d[,xvars])
+d <- maipo
 
 wrp <- pca_warper(d, xvars = xvars, yvar = "class")
 plot(wrp)

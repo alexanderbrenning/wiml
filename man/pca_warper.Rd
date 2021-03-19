@@ -58,8 +58,7 @@ these arguments should not overlap.
 xvars <- c(paste("ndvi0", 1:8, sep = ""), paste("ndwi0", 1:8, sep = ""),
            paste("b", outer(1:8,2:7,paste,sep = ""), sep = ""))
 fo <- as.formula(paste("class ~", paste(xvars, collapse=" +" )))
-d <- Maipo[,all.vars(fo)]
-d[,xvars] <- scale(d[,xvars])
+d <- maipo
 
 wrp <- pca_warper(d, xvars = xvars, yvar = "class")
 plot(wrp)

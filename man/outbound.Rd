@@ -12,6 +12,8 @@ inbound(object, ...)
 \arguments{
 \item{object}{A \code{warper} object, such as a \code{\link{pca_warper}}
 for principal components transformations.}
+
+\item{...}{Additional arguments for the corresponding method.}
 }
 \value{
 A transformed data frame of class \code{warped_df} (for outbound)

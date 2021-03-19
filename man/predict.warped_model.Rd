@@ -38,8 +38,7 @@ model predictions for the training data.
 xvars <- c(paste("ndvi0", 1:8, sep = ""), paste("ndwi0", 1:8, sep = ""),
            paste("b", outer(1:8,2:7,paste,sep = ""), sep = ""))
 fo <- as.formula(paste("class ~", paste(xvars, collapse=" +" )))
-d <- Maipo[,all.vars(fo)]
-d[,xvars] <- scale(d[,xvars])
+d <- maipo
 
 sel <- seq(1, nrow(d), by = 2)
 #sel <- sample(1:nrow(d), size = floor(nrow(d)/2))
@@ -91,7 +90,7 @@ round(wrp$pca$rotation[,1:4], digits = 2)
 # but especially more variable than using the untransformed data:
 pcfo <- as.formula(paste("class ~", paste(wrp$wvars, collapse="+" )))
 wdtrain <- warp(dtrain, warper = wrp)
-pcfit <- randomForest::randomForest(formula = wfo, data = wdtrain)
+pcfit <- randomForest::randomForest(formula = pcfo, data = wdtrain)
 pcfit
 mean(wdtest$class != predict(pcfit, newdata = wdtest))
 # (but the rotation forest method makes more intelligent use of transformed

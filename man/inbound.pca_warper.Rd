@@ -4,7 +4,7 @@
 \alias{inbound.pca_warper}
 \title{Methods for forward (outbound) and backward (inbound) feature space transformation using warper objects}
 \usage{
-\method{inbound}{pca_warper}(object, wdata = object$pca$x)
+\method{inbound}{pca_warper}(object, wdata = object$pca$x, ...)
 }
 \arguments{
 \item{object}{A \code{warper} object created by \code{\link{pca_warper}}
@@ -12,6 +12,8 @@ for principal components transformations.}
 
 \item{wdata}{A data frame containing data in transformed space, i.e.
 coordinates with respect to principal components axes.}
+
+\item{...}{Additional arguments to be passed to \code{inbound.rotation_warper}}
 }
 \value{
 A transformed data frame of class \code{warped_df} (for outbound)

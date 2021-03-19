@@ -8,6 +8,7 @@
 #'
 #' @param object A \code{warper} object, such as a \code{\link{pca_warper}}
 #'     for principal components transformations.
+#' @param ... Additional arguments for the corresponding method.
 #' @return A transformed data frame of class \code{warped_df} (for outbound)
 #'   or \code{data.frame} (for inbound transformations).
 #' @details These functions are mainly intended for internal use.
@@ -38,26 +39,39 @@ inbound <- function(object, ...) {
 #' @param xdata A data frame with features in the original, untransformed
 #'     feature space.
 #' @param wdata A data frame containing data in transformed space.
+#' @param ... Currently not used.
 #' @return A transformed data frame of class \code{warped_df} (for outbound)
 #'   or \code{data.frame} (for inbound transformations).
 #' @details These functions are mainly intended for internal use.
 #'   The \code{\link{warp}} and \code{\link{unwarp}} methods are more
 #'   user-friendly.
 #' @export
-inbound.rotation_warper <- function(object, wdata = object$wdata) {
-  res <- as.data.frame(as.matrix(wdata[, object$wvars]) %*%
+inbound.rotation_warper <- function(object, wdata = object$wdata, ...) {
+  chkDots(...)
+
+  # Rotate the data using the inverse rotation matrix:
+  res <- as.data.frame(as.matrix(wdata[, object$Wvars]) %*%
                          solve(object$full_rotation))
+  colnames(res) <- object$Xvars
+
+  # Scale the data, and adds its mean, if applicable:
   if (any(names(object) == "scale"))
     if (!is.logical(object$scale))
-      res <- res * matrix(rep(object$scale, nrow(wdata)),
-                          nrow = nrow(wdata), byrow = TRUE)
+      res[, names(object$scale)] <-
+        res[, names(object$scale)] *
+          matrix(rep(object$scale, nrow(wdata)),
+                 nrow = nrow(wdata), byrow = TRUE)
   if (any(names(object) == "center"))
     if (!is.logical(object$center))
-      res <- res + matrix(rep(object$center, nrow(wdata)),
-                          nrow = nrow(wdata), byrow = TRUE)
-  if (any(colnames(wdata) == object$yvar))
-    res[object$yvar] <- wdata[, object$yvar]
-  return(res)
+      res[, names(object$center)] <-
+        res[, names(object$center)] +
+          matrix(rep(object$center, nrow(wdata)),
+                 nrow = nrow(wdata), byrow = TRUE)
+
+  wdata[object$Wvars] <- NULL
+  wdata[, object$Xvars] <- res
+
+  wdata
 }
 
 
@@ -72,36 +86,43 @@ inbound.rotation_warper <- function(object, wdata = object$wdata) {
 #'     for principal components transformations.
 #' @param wdata A data frame containing data in transformed space, i.e.
 #'     coordinates with respect to principal components axes.
+#' @param ... Additional arguments to be passed to `inbound.rotation_warper`
 #' @return A transformed data frame of class \code{warped_df} (for outbound)
 #'   or \code{data.frame} (for inbound transformations).
 #' @details These functions are mainly intended for internal use.
 #'   The \code{\link{warp}} and \code{\link{unwarp}} methods are more
 #'   user-friendly.
 #' @export
-inbound.pca_warper <- function(object, wdata = object$pca$x) {
-  inbound.rotation_warper(object = object, wdata = wdata)
+inbound.pca_warper <- function(object, wdata = object$pca$x, ...) {
+  inbound.rotation_warper(object = object, wdata = wdata, ...)
 }
 
 
 #' @describeIn inbound.rotation_warper Forward (outbound) transformation using a rotation warper
 #' @export
-outbound.rotation_warper <- function(object, xdata = NULL) {
+outbound.rotation_warper <- function(object, xdata = NULL, ...) {
+  chkDots(...)
   # Center and then scale the variables:
-  res <- as.matrix(xdata[, object$xvars])
+  res <- as.matrix(xdata[, object$Xvars])
   if (any(names(object) == "center"))
     if (!is.logical(object$center))
-      res <- res - matrix(rep(object$center, nrow(xdata)),
-                          nrow = nrow(xdata), byrow = TRUE)
+      res[, names(object$center)] <-
+        res[, names(object$center)] -
+          matrix(rep(object$center, nrow(xdata)),
+                 nrow = nrow(xdata), byrow = TRUE)
   if (any(names(object) == "scale"))
     if (!is.logical(object$scale))
-      res <- res * matrix(rep(1 / object$scale, nrow(xdata)),
-                          nrow = nrow(xdata), byrow = TRUE)
+      res[, names(object$scale)] <-
+        res[, names(object$scale)] *
+          matrix(rep(1 / object$scale, nrow(xdata)),
+                 nrow = nrow(xdata), byrow = TRUE)
   # Apply rotation:
   res <- as.data.frame(res %*% object$full_rotation)
-  # }
-  if (any(colnames(xdata) == object$yvar))
-    res[object$yvar] <- xdata[, object$yvar]
-  return(res)
+
+  xdata[object$Xvars] <- NULL
+  xdata[, object$Wvars] <- res
+
+  xdata
 }
 
 
@@ -144,8 +165,8 @@ pca_warper <- function(xdata, xvars, wvars = "PC", yvar, uvars = NULL,
   if (missing(yvar))
     stop("response variable 'yvar' must be specified")
 
-  xvars <- xvars[ !(xvars %in% uvars) ]
-  wvars <- wvars[ !(wvars %in% uvars) ]
+  # xvars <- xvars[ !(xvars %in% uvars) ]
+  # wvars <- wvars[ !(wvars %in% uvars) ]
 
   # Center and scale x variables:
   if (center) {
@@ -165,7 +186,7 @@ pca_warper <- function(xdata, xvars, wvars = "PC", yvar, uvars = NULL,
 
   # Perform PCA on x variables:
   fo <- as.formula(paste0("~", paste(xvars, collapse = " + ")))
-  pca <- prcomp(formula = fo, data = xdata[,xvars],
+  pca <- stats::prcomp(formula = fo, data = xdata[, xvars],
                 center = FALSE, scale. = FALSE)
 
   # Make loadings 'more positive':
@@ -202,14 +223,16 @@ pca_warper <- function(xdata, xvars, wvars = "PC", yvar, uvars = NULL,
     center = center,
     scale = scale,
     xformula = xfo,
-    xvars = rownames(full_rotation),
-    wvars = colnames(full_rotation),
+    Xvars = rownames(full_rotation),
+    Wvars = colnames(full_rotation),
+    xvars = xvars,
+    wvars = wvars,
     yvar = yvar,
     uvars = uvars,
     title = title
   )
   class(x) <- c("pca_warper", "rotation_warper", "warper")
-  return(x)
+  x
 }
 
 
@@ -230,7 +253,7 @@ pca_warper <- function(xdata, xvars, wvars = "PC", yvar, uvars = NULL,
 #' @param wvars A character vector of same length as \code{xvars} giving the prefixes
 #'     to be used to generate the names of transformed predictors. If of length 1,
 #'     use prefix \code{"<wvars>[1]"} for first feature subset, i.e. \code{"PC[1]2"} for
-#'     second principal compoment from first feature subset. If \code{NULL}, use
+#'     second principal component from first feature subset. If \code{NULL}, use
 #'     \code{"PC"} as the prefix.
 #' @param uvars Optional list of same length as \code{xvars} with names of additional
 #'     variables that should remain untouched.
@@ -258,6 +281,10 @@ strucpca_warper <- function(xdata, xvars, wvars = NULL, yvar, uvars = NULL,
   if (length(positive) == 1)
     positive <- rep(positive, length(xvars))
 
+  if (is.null(wvars)) wvars <- "PC"
+  if ((length(wvars) == 1) & (nwrp > 1))
+    wvars <- paste0(wvars, "[", c(1:nwrp), "]")
+
   for (i in 1:nwrp) {
     if (is.list(uvars)) {
       the_uvars <- uvars[[i]]
@@ -265,16 +292,9 @@ strucpca_warper <- function(xdata, xvars, wvars = NULL, yvar, uvars = NULL,
       the_uvars <- NULL
       if (i == 1) the_uvars <- uvars
     }
-    if (length(wvars) == nwrp) {
-      the_wvars <- wvars[i]
-    } else if (length(wvars) == 1) {
-      the_wvars <- paste0(wvars, "[", i, "]")
-    } else if (is.null(wvars)) {
-      the_wvars <- paste0("PC[", i, "]")
-    }
     wrp[[i]] <- pca_warper(xdata = xdata, xvars = xvars[[i]],
                            yvar = yvar, uvars = the_uvars,
-                           wvars = the_wvars,
+                           wvars = wvars[i],
                            center = ctr[i],
                            scale = scl[i],
                            positive = positive[i])
@@ -296,20 +316,24 @@ strucpca_warper <- function(xdata, xvars, wvars = NULL, yvar, uvars = NULL,
     }
   }
 
+  names(wrp) <- wvars
+
   x <- list(
     warpers = wrp,
     full_rotation = full_rotation,
     center = ctr,
     scale = scl,
-    xvars = rownames(full_rotation),
-    wvars = colnames(full_rotation),
+    Xvars = rownames(full_rotation),
+    Wvars = colnames(full_rotation),
+    xvars = xvars,
+    wvars = wvars,
     yvar = yvar,
     uvars = unlist(uvars),
     title = title
   )
   class(x) <- c("strucpca_warper", "pca_warper", "rotation_warper", "warper")
 
-  return(x)
+  x
 }
 
 
@@ -322,14 +346,15 @@ strucpca_warper <- function(xdata, xvars, wvars = NULL, yvar, uvars = NULL,
 #' transformation with respect to a selected feature.
 #'
 #' @param xdata A data frame containing the observations in the original feature space.
-#' @param xvars A character string identifying one feature in \code{xdata}
-#'     that should be transformed.
+#' @param pvars A character string identifying one feature in \code{xdata}
+#'     that is used as the selected feature; the other features in
+#'     `xvars` will be transformed by orthogonalization, while
+#'     this one will remain unchanged.
 #' @param wvars A character string giving a prefix for partial residual features.
 #' @inheritParams pca_warper
 #' @return An object of class \code{warper}, \code{rotation_warper} and \code{pls_warper}.
-#' @details The function will make an effort to ensure that there's no overlap
-#'     between \code{xvars}, \code{uvars} and \code{yvar}; however, ideally
-#'     these arguments should not overlap.
+#' @details The arguments
+#'     `pvars`, `xvars`, `uvars` and `yvar` should not overlap.
 #' @export
 pls_warper <- function(xdata, xvars, pvars, wvars = "resid", yvar, uvars = NULL,
                        title = wvars) {
@@ -345,33 +370,53 @@ pls_warper <- function(xdata, xvars, pvars, wvars = "resid", yvar, uvars = NULL,
     warning("length of 'pvars' must be 1 at present; using first element")
     pvars <- pvars[1]
   }
+  if (any(xvars == pvars)) {
+    warning("'pvars' cannot be included in 'xvars'; removing it.")
+    xvars <- xvars[ xvars != pvars ]
+  }
+  if ((length(wvars) != 1) & (length(wvars) != length(xvars))) {
+    warning("length of 'wvars' must be 1 or equal to length of 'xvars';\n  using 'wvars[1]' (or otherwise \"resid\") as prefix")
+    if (length(wvars) >= 1) {
+      wvars <- wvars[1]
+    } else {
+      wvars <- "resid"
+    }
+  }
 
-  xvars <- xvars[ !(xvars %in% uvars) ]
-  xvars <- xvars[ !(xvars %in% pvars) ]
-  wvars <- wvars[ !(wvars %in% uvars) ]
-  wvars <- wvars[ !(wvars %in% pvars) ]
+  # FIXME: do some checks instead:
+  # xvars <- xvars[ !(xvars %in% uvars) ]
+  # xvars <- xvars[ !(xvars %in% pvars) ]
+  # wvars <- wvars[ !(wvars %in% uvars) ]
+  # wvars <- wvars[ !(wvars %in% pvars) ]
 
-  if (is.null(uvars))
-    uvars <- dplyr::setdiff(colnames(xdata), c(yvar, pvars, xvars))
+  # if (is.null(uvars))
+  #   uvars <- dplyr::setdiff(colnames(xdata), c(yvar, pvars, xvars))
 
   if (length(wvars) < length(xvars))
     wvars <- paste0(wvars[1], xvars)
 
-  # Re-order columns, remove unused variables:
-  xdata <- xdata[, c(yvar, pvars, xvars, uvars)]
+  # Ignored variables:
+  ivars <- dplyr::setdiff(colnames(xdata), c(yvar, pvars, xvars, uvars))
 
-  stopifnot(length(pvars) == 1)
+  # Re-order columns:
+  xdata <- xdata[, c(yvar, pvars, xvars, uvars, ivars)]
 
   # Identity rotation matrix for untransformed features:
   uid <- diag(length(uvars)) # works with length == 0
   rownames(uid) <- colnames(uid) <- uvars
 
-  betas <- xvars %>% map_dbl(~ cor(xdata[,.x], xdata[,pvars[1]]))
+  cf_fun <- function(x) {
+    fo <- as.formula(paste(x, "~", pvars))
+    cf <- stats::coef(stats::lm(fo, data = xdata))
+    names(cf) <- c("alpha", "beta")
+    cf
+  }
+  coefs <- xvars %>% purrr::map_dfr(cf_fun) %>% as.matrix()
 
-  # xdata[,xvars] <- xvars %>% map(~ xdata[,.x] - xdata[,pvars] * betas[.x]) %>%
-  #   as.data.frame()
+  center <- t(coefs[, 1])
+  names(center) <- xvars
 
-  rotation <- rbind(betas*(-1), diag(length(xvars)))
+  rotation <- rbind(t(coefs[, 2])*(-1), diag(length(xvars)))
   rotation <- cbind(c(1, rep(0, length(xvars))), rotation)
   rownames(rotation) <- c(pvars, xvars)
   colnames(rotation) <- c(pvars, wvars)
@@ -381,29 +426,124 @@ pls_warper <- function(xdata, xvars, pvars, wvars = "resid", yvar, uvars = NULL,
   full_rotation <- lava::blockdiag(rotation, uid)
 
   # Transform xvars -> wvars:
-  xdata[,c(pvars,xvars)] <- as.matrix(xdata[,c(pvars,xvars)]) %*% rotation
+  xdata[, names(center)] <- xdata[, names(center)] -
+                            matrix(rep(center, nrow(xdata)),
+                                   nrow = nrow(xdata),
+                                   byrow = TRUE)
+  xdata[, colnames(rotation)] <- as.matrix(xdata[, rownames(rotation)]) %*% rotation
   # Full rotation would be a waste of computing time:
   # xdata[,c(pvars,xvars,uvars)] <- as.matrix(xdata[,c(pvars,xvars,uvars)]) %*% full_rotation
 
   # Assign user-defined names to transformed features:
-  colnames(xdata) <- c(yvar, pvars, wvars, uvars)
+  colnames(xdata) <- c(yvar, pvars, wvars, uvars, ivars)
 
   # Set up warper object:
   x <- list(
     full_rotation = full_rotation,
-    center = FALSE,
+    center = center,
     scale = FALSE,
     wdata = xdata,
-    xvars = rownames(full_rotation),
-    wvars = colnames(full_rotation),
+    Xvars = rownames(full_rotation),
+    Wvars = colnames(full_rotation),
+    xvars = xvars,
+    wvars = wvars,
     pvars = pvars,
     yvar = yvar,
     uvars = uvars,
     title = title
   )
   class(x) <- c("pls_warper", "rotation_warper", "warper")
-  return(x)
+  x
 }
+
+
+
+# pls_warper <- function(xdata, xvars, pvars, wvars = "resid", yvar, uvars = NULL,
+#                        title = wvars) {
+#   if (missing(xdata))
+#     stop("data frame 'xdata' must be specified")
+#   if (missing(xvars))
+#     stop("predictor variables 'xvars' must be specified")
+#   if (missing(yvar))
+#     stop("response variable 'yvar' must be specified")
+#   if (missing(pvars))
+#     stop("selected predictor variable 'pvars' must be specified (length 1)")
+#   if (length(pvars) > 1) {
+#     warning("length of 'pvars' must be 1 at present; using first element")
+#     pvars <- pvars[1]
+#   }
+#   if ((length(wvars) != 1) & (length(wvars) != length(xvars))) {
+#     warning("length of 'wvars' must be 1 or equal to length of 'xvars';\n  using 'wvars[1]' (or otherwise \"resid\") as prefix")
+#     if (length(wvars) >= 1) {
+#       wvars <- wvars[1]
+#     } else {
+#       wvars <- "resid"
+#     }
+#   }
+#
+#   # FIXME: do some checks instead:
+#   # xvars <- xvars[ !(xvars %in% uvars) ]
+#   # xvars <- xvars[ !(xvars %in% pvars) ]
+#   # wvars <- wvars[ !(wvars %in% uvars) ]
+#   # wvars <- wvars[ !(wvars %in% pvars) ]
+#
+#   # if (is.null(uvars))
+#   #   uvars <- dplyr::setdiff(colnames(xdata), c(yvar, pvars, xvars))
+#
+#   if (length(wvars) < length(xvars))
+#     wvars <- paste0(wvars[1], xvars)
+#
+#   # Ignored variables:
+#   ivars <- dplyr::setdiff(colnames(xdata), c(yvar, pvars, xvars, uvars))
+#
+#   # Re-order columns:
+#   xdata <- xdata[, c(yvar, pvars, xvars, uvars, ivars)]
+#
+#   # Identity rotation matrix for untransformed features:
+#   uid <- diag(length(uvars)) # works with length == 0
+#   rownames(uid) <- colnames(uid) <- uvars
+#
+#   # FIXME: use regression instead, or scale the features
+#   betas <- xvars %>% map_dbl(~ cor(xdata[,.x], xdata[,pvars[1]]))
+#
+#   # xdata[,xvars] <- xvars %>% map(~ xdata[,.x] - xdata[,pvars] * betas[.x]) %>%
+#   #   as.data.frame()
+#
+#   rotation <- rbind(betas*(-1), diag(length(xvars)))
+#   rotation <- cbind(c(1, rep(0, length(xvars))), rotation)
+#   rownames(rotation) <- c(pvars, xvars)
+#   colnames(rotation) <- c(pvars, wvars)
+#
+#   # Compile full rotation matrix from identity matrices for pvars and uvars,
+#   # and orthogonalization matrix for xvars -> wvars transformation:
+#   full_rotation <- lava::blockdiag(rotation, uid)
+#
+#   # Transform xvars -> wvars:
+#   xdata[, colnames(rotation)] <- as.matrix(xdata[, rownames(rotation)]) %*% rotation
+#   # Full rotation would be a waste of computing time:
+#   # xdata[,c(pvars,xvars,uvars)] <- as.matrix(xdata[,c(pvars,xvars,uvars)]) %*% full_rotation
+#
+#   # Assign user-defined names to transformed features:
+#   colnames(xdata) <- c(yvar, pvars, wvars, uvars, ivars)
+#
+#   # Set up warper object:
+#   x <- list(
+#     full_rotation = full_rotation,
+#     center = FALSE,
+#     scale = FALSE,
+#     wdata = xdata,
+#     Xvars = rownames(full_rotation),
+#     Wvars = colnames(full_rotation),
+#     xvars = xvars,
+#     wvars = wvars,
+#     pvars = pvars,
+#     yvar = yvar,
+#     uvars = uvars,
+#     title = title
+#   )
+#   class(x) <- c("pls_warper", "rotation_warper", "warper")
+#   x
+# }
 
 
 
@@ -423,7 +563,7 @@ pls_warper <- function(xdata, xvars, pvars, wvars = "resid", yvar, uvars = NULL,
 #'   to the original feature space, and then fits a model using these features.
 #' @seealso \code{\link{warp_fitted_model}}
 #' @export
-warp.function <- function(x, warper) {
+warp.function <- function(x, warper, ...) {
   function(formula, data, ...) {
     data <- unwarp(data, warper = warper)
     fit <- x(formula, data = data, ...)
@@ -431,8 +571,9 @@ warp.function <- function(x, warper) {
       fit = fit,
       warper = warper
     )
+    chkDots(...)
     class(res) <- "warped_model"
-    return(res)
+    res
   }
 }
 
@@ -468,15 +609,17 @@ warp <- function(x, ...) {
 #'   \code{\link{pca_warper}} for an example of a simple warper function based
 #'   on the principal components transformation.
 #' @export
-warp.data.frame <- function(x, warper) {
+warp.data.frame <- function(x, warper, ...) {
+  chkDots(...)
   x <- outbound(warper, xdata = x)
   class(x) <- c("warped_df", class(x))
-  return(x)
+  x
 }
 
 #' @describeIn warp.data.frame Does nothing - \code{warped_df} has already been transformed
 #' @export
-warp.warped_df <- function(x, warper) {
+warp.warped_df <- function(x, warper, ...) {
+  chkDots(...)
   x
 }
 
@@ -516,18 +659,20 @@ unwarp <- function(x, ...) {
 #'   on the principal components transformation.
 #' @example examples/pca_warper.R
 #' @export
-unwarp.warped_df <- function(x, warper, force_unwarp = FALSE) {
+unwarp.warped_df <- function(x, warper, force_unwarp = FALSE, ...) {
+  chkDots(...)
   class(x) <- class(x)[class(x) != "warped_df"]
   x <- inbound(warper, wdata = x)
-  return(x)
+  x
 }
 
 #' @describeIn unwarp.warped_df Backtransform a data frame from transformed to original feature space
 #' @export
-unwarp.data.frame <- function(x, warper = NULL, force_unwarp = FALSE) {
+unwarp.data.frame <- function(x, warper = NULL, force_unwarp = FALSE, ...) {
+  chkDots(...)
   if (force_unwarp)
     x <- unwarp.warped_df(x, warper = warper)
-  return(x)
+  x
 }
 
 
@@ -556,7 +701,7 @@ unwarp.data.frame <- function(x, warper = NULL, force_unwarp = FALSE) {
 warp_fitted_model <- function(x, warper) {
   res <- list(fit = x, warper = warper)
   class(res) <- "warped_model"
-  return(res)
+  res
 }
 
 #' Predict from a warped fitted machine-learning model
@@ -599,7 +744,7 @@ predict.warped_model <- function(object, newdata = NULL,
 #' These methods try to create meaningful summaries for warped model objects
 #' and their components (warper, model).
 #'
-#' @param object A warped fitted model object.
+#' @param object,x A warped fitted model object.
 #' @param ... Additional arguments.
 #' @return summary or plot objects
 #' @export
@@ -613,8 +758,8 @@ summary.warped_model <- function(object, ...) {
 
 #' @describeIn summary.warped_model Attempt to plot warped model
 #' @export
-plot.warped_model <- function(object, ...) {
-  plot(object$fit, ...)
+plot.warped_model <- function(x, ...) {
+  plot(x$fit, ...)
 }
 
 
@@ -623,14 +768,23 @@ plot.warped_model <- function(object, ...) {
 #' This method plots standard PCA summary diagrams.
 #'
 #' @param object A \code{\link{pca_warper}} object.
+#' @param which Which plots to plot: screeplot (`1`), biplot (`2`).
 #' @param col,bp.col Colours of \code{biplot} labels and \code{barplot} bars.
-#' @return Invisibly returns the result of the biplot call (this may change)
+#' @param ... Currently not used.
+#' @return Returns `NULL`
 #' @example examples/pca_warper.R
 #' @export
-plot.pca_warper <- function(object, col = c("white", "black"), bp.col = "lightblue") {
+plot.pca_warper <- function(x,
+                            which = c(1:2),
+                            col = c("white", "black"),
+                            bp.col = "lightblue",
+                            ...) {
   # check out ggbiplot:
   # https://rpubs.com/ciwhite/585948
-  par(mfrow = c(1,2))
-  plot(object$pca, col = bp.col, xlab = "PC #", main = "PC Variances")
-  biplot(object$pca, col = col, main = "Screeplot")
+  chkDots(...)
+  if (any(which == 1))
+    plot(x$pca, col = bp.col, xlab = "PC #", main = "PC Variances")
+  if (any(which == 2))
+    biplot(x$pca, col = col, main = "Screeplot")
+  invisible(NULL)
 }

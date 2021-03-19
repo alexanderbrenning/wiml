@@ -27,7 +27,7 @@ each other.}
 \item{wvars}{A character vector of same length as \code{xvars} giving the prefixes
 to be used to generate the names of transformed predictors. If of length 1,
 use prefix \code{"<wvars>[1]"} for first feature subset, i.e. \code{"PC[1]2"} for
-second principal compoment from first feature subset. If \code{NULL}, use
+second principal component from first feature subset. If \code{NULL}, use
 \code{"PC"} as the prefix.}
 
 \item{yvar}{Name of the response variable (not to be transformed)}

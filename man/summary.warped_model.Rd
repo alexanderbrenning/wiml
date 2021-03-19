@@ -7,10 +7,10 @@
 \usage{
 \method{summary}{warped_model}(object, ...)
 
-\method{plot}{warped_model}(object, ...)
+\method{plot}{warped_model}(x, ...)
 }
 \arguments{
-\item{object}{A warped fitted model object.}
+\item{object, x}{A warped fitted model object.}
 
 \item{...}{Additional arguments.}
 }

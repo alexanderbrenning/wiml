@@ -17,8 +17,13 @@ pls_warper(
 \arguments{
 \item{xdata}{A data frame containing the observations in the original feature space.}
 
-\item{xvars}{A character string identifying one feature in \code{xdata}
+\item{xvars}{A character vector with the column names of features in \code{xdata}
 that should be transformed.}
+
+\item{pvars}{A character string identifying one feature in \code{xdata}
+that is used as the selected feature; the other features in
+\code{xvars} will be transformed by orthogonalization, while
+this one will remain unchanged.}
 
 \item{wvars}{A character string giving a prefix for partial residual features.}
 
@@ -37,7 +42,6 @@ This function generates a \code{warper} object based on a partial least squares
 transformation with respect to a selected feature.
 }
 \details{
-The function will make an effort to ensure that there's no overlap
-between \code{xvars}, \code{uvars} and \code{yvar}; however, ideally
-these arguments should not overlap.
+The arguments
+\code{pvars}, \code{xvars}, \code{uvars} and \code{yvar} should not overlap.
 }

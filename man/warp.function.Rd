@@ -4,7 +4,7 @@
 \alias{warp.function}
 \title{Create a warped version of a model fitting function}
 \usage{
-\method{warp}{`function`}(x, warper)
+\method{warp}{`function`}(x, warper, ...)
 }
 \arguments{
 \item{x}{A model fitting function such as \code{\link{lm}} or \code{\link[randomForest]{randomForest}}}

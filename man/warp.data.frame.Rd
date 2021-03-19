@@ -5,9 +5,9 @@
 \alias{warp.warped_df}
 \title{Transform data from feature space into a transformed space}
 \usage{
-\method{warp}{data.frame}(x, warper)
+\method{warp}{data.frame}(x, warper, ...)
 
-\method{warp}{warped_df}(x, warper)
+\method{warp}{warped_df}(x, warper, ...)
 }
 \arguments{
 \item{x}{The object to be transformed, normally a data frame.}
