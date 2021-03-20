@@ -1,6 +1,6 @@
 Package: wiml
 Title: Interpreting machine-learning models in transformed space
-Version: 0.0.0.9000
+Version: 0.0.0.9003
 Authors@R: 
     person(given = "Alexander",
            family = "Brenning",
@@ -19,7 +19,7 @@ License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1.9002
+RoxygenNote: 7.1.1.9001
 Enhances:
     iml
 URL: https://github.com/alexanderbrenning/wiml

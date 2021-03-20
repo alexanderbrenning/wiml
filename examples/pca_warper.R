@@ -7,7 +7,7 @@ d <- maipo
 wrp <- pca_warper(d, xvars = xvars, yvar = "class")
 plot(wrp)
 round(wrp$pca$rotation[,1:3], digits = 2)
-summary(wrp$pca)
+summary(wrp)
 
 # Create a data frame with transformed data:
 wd <- warp(d, warper = wrp)
