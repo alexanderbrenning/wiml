@@ -2,20 +2,23 @@
 % Please edit documentation in R/warped_model.R
 \name{summary.warped_model}
 \alias{summary.warped_model}
+\alias{print.summary.warped_model}
 \alias{plot.warped_model}
 \title{Summary of a warped model}
 \usage{
 \method{summary}{warped_model}(object, ...)
 
+\method{print}{summary.warped_model}(x, ...)
+
 \method{plot}{warped_model}(x, ...)
 }
 \arguments{
-\item{object, x}{A warped fitted model object.}
+\item{object, x}{A warped fitted model object (or a summary object, in the \code{print} method).}
 
 \item{...}{Additional arguments.}
 }
 \value{
-summary or plot objects
+Summary object.
 }
 \description{
 These methods try to create meaningful summaries for warped model objects
@@ -23,6 +26,8 @@ and their components (warper, model).
 }
 \section{Functions}{
 \itemize{
+\item \code{print.summary.warped_model}: Print summary of warped model
+
 \item \code{plot.warped_model}: Attempt to plot warped model
 }}
 

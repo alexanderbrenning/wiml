@@ -68,15 +68,30 @@ predict.warped_model <- function(object, newdata = NULL,
 #' These methods try to create meaningful summaries for warped model objects
 #' and their components (warper, model).
 #'
-#' @param object,x A warped fitted model object.
+#' @param object,x A warped fitted model object (or a summary object, in the `print` method).
 #' @param ... Additional arguments.
-#' @return summary or plot objects
+#' @return Summary object.
 #' @export
 summary.warped_model <- function(object, ...) {
-  list(
+  x <- list(
     summary_warper = summary(object$warper),
     summary_model = summary(object$fit, ...)
   )
+  class(x) <- "print.summary.warped_model"
+  x
+}
+
+
+#' @describeIn summary.warped_model Print summary of warped model
+#'
+#' @export
+print.summary.warped_model <- function(x, ...) {
+  cat("Warped machine-learning model:\n\n")
+  cat("Warper:\n")
+  print(x$summary_warper)
+  cat("\nModel summary:\n\n")
+  print(x$summary_model, ...)
+  invisible(x)
 }
 
 

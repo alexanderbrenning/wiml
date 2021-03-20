@@ -24,5 +24,7 @@ Enhances:
     iml
 URL: https://github.com/alexanderbrenning/wiml
 BugReports: https://github.com/alexanderbrenning/wiml/issues
+Imports:
+    purrr
 Depends: 
     R (>= 2.10)

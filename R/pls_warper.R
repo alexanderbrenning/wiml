@@ -14,6 +14,7 @@
 #' @return An object of class \code{warper}, \code{rotation_warper} and \code{pls_warper}.
 #' @details The arguments
 #'     `pvars`, `xvars`, `uvars` and `yvar` should not overlap.
+#' @example examples/pls_warper.R
 #' @export
 pls_warper <- function(xdata, xvars, pvars, wvars = "resid", yvar, uvars = NULL,
                        title = wvars) {
