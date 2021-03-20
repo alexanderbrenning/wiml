@@ -49,7 +49,7 @@ warp_fitted_model <- function(x, warper) {
 #' @seealso \code{\link{warp_fitted_model}} for creating a warped machine-learning
 #'   model, and the \code{\link{predict}} method of your machine-learning model
 #'   for details on additional arguments and the returned values.
-#' @example examples/warp_fitted_model.R
+#' @example examples/predict.warped_model.R
 #' @export
 predict.warped_model <- function(object, newdata = NULL,
                                  force_unwarp = TRUE, ...) {
