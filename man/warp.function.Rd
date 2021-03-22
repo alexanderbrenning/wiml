@@ -7,9 +7,9 @@
 \method{warp}{`function`}(x, warper, ...)
 }
 \arguments{
-\item{x}{A model fitting function such as \code{\link{lm}} or \code{\link[randomForest]{randomForest}}}
+\item{x}{A model fitting function such as \code{\link[stats:lm]{stats::lm()}} or \link[randomForest:randomForest]{randomForest::randomForest}}
 
-\item{warper}{A \code{warper} object, for example a \code{\link{pca_warper}}.}
+\item{warper}{A \code{warper} object, for example a \link{pca_warper}.}
 
 \item{...}{Additional arguments to be passed to the model fitting function.}
 }
@@ -20,10 +20,12 @@ this function first (back)transformed its input data from the transformed space
 to the original feature space, and then fits a model using these features.
 }
 \description{
-Use \code{\link{warp_fitted_model}} instead, which provides a more
+Use \code{\link[=warp_fitted_model]{warp_fitted_model()}} instead, which provides a more
 elegant way to create a warped perspective on a model. This function may
-be omitted in the future.
+be omitted in the future, unless it turns out to be instrumental
+in drop/permute and re-learn techniques that require a trainable
+model, not a fitted one.
 }
 \seealso{
-\code{\link{warp_fitted_model}}
+\code{\link[=warp_fitted_model]{warp_fitted_model()}}
 }

@@ -5,19 +5,19 @@
 #' from a fitted machine-learning model \eqn{\hat{f}} and a warper object
 #' representing the transformation function \eqn{T}.
 #'
-#' @param x A fitted model, for example from a \code{randomForest} call.
+#' @param x A fitted model, for example from a `randomForest` call.
 #'     This model was fitted to the original, untransformed data.
-#' @param warper A \code{warper} object, representing an (invertible)
+#' @param warper A `warper` object, representing an (invertible)
 #'     transformation from the model's feature space to a transformed space
 #'     whose axes (or base vectors) define a new perspective on the
 #'     feature space and model.
-#' @return An object of class \code{warped_model}, which can be used to
+#' @return An object of class `warped_model`, which can be used to
 #'   make predictions using input data from the transformed space
-#'   thanks to the \code{predict} method for this object type.
+#'   thanks to the `predict` method for this object type.
 #' @details This function does not re-fit the model, it simply creates a
 #'   data structure that jointly stores the fitted model and the warper
-#'   object. The \code{warped_model}'s \code{predict} (and other) methods
-#'   allow the user to use a \code{warped_model} as if it had been fitted
+#'   object. The `warped_model`'s `predict` (and other) methods
+#'   allow the user to use a `warped_model` as if it had been fitted
 #'   using the transformed data.
 #' @example examples/warp_fitted_model.R
 #' @export
@@ -35,19 +35,19 @@ warp_fitted_model <- function(x, warper) {
 #' principal components space) to the original feature space and then applying
 #' the fitted machine learning model's predict method to make predictions.
 #'
-#' @param object A \code{warped_model} object, i.e. a warped fitted machine-learning model as created by \code{\link{warp_fitted_model}}.
+#' @param object A `warped_model` object, i.e. a warped fitted machine-learning model as created by \code{\link{warp_fitted_model}}.
 #' @param newdata A data frame with features in transformed space. This can be a \code{warped_df} object or just a plain \code{data.frame}. See \code{force_unwarp}.
-#' @param force_unwarp If \code{TRUE}, \code{newdata} will always be (back)transformed
-#'   into feature space using the \code{warper}'s inverse transformation.
-#'   If \code{FALSE}, only objects of class \code{warped_df} will be backtransformed.
-#' @param ... Additional arguments for the predict method of \code{object$fit}.
+#' @param force_unwarp If `TRUE`, `newdata` will always be (back)transformed
+#'   into feature space using the `warper`'s inverse transformation.
+#'   If `FALSE`, only objects of class `warped_df` will be backtransformed.
+#' @param ... Additional arguments for the predict method of `object$fit`.
 #' @return The function's result depends on the behaviour of the invoked
 #'   predict method.
-#' @details \code{newdata} will normally be a data frame, not \code{NULL}; not all
-#'   fitted models accept \code{NULL}. The most common behaviour is to return
+#' @details `newdata` will normally be a data frame, not `NULL`; not all
+#'   fitted models accept `NULL`. The most common behaviour is to return
 #'   model predictions for the training data.
-#' @seealso \code{\link{warp_fitted_model}} for creating a warped machine-learning
-#'   model, and the \code{\link{predict}} method of your machine-learning model
+#' @seealso [warp_fitted_model()] for creating a warped machine-learning
+#'   model, and the `predict` method of your machine-learning model
 #'   for details on additional arguments and the returned values.
 #' @example examples/predict.warped_model.R
 #' @export

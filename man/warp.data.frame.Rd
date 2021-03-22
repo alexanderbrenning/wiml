@@ -12,7 +12,7 @@
 \arguments{
 \item{x}{The object to be transformed, normally a data frame.}
 
-\item{warper}{A \code{warper} object as, for example, created by \code{\link{pca_warper}} for principal components transformations.}
+\item{warper}{A \code{warper} object as, for example, created by \code{\link[=pca_warper]{pca_warper()}} for principal components transformations.}
 
 \item{...}{Additional arguments to be passed to the \code{warp} method.}
 }
@@ -22,7 +22,7 @@ A data frame with features in the transformed (e.g., PCA) space.
 \description{
 \code{warp} methods apply the transformation \eqn{T} to data
 in feature space - the result is, for example, the principal components
-representation of the data, if a \code{\link{pca_warper}} is used.
+representation of the data, if a \link{pca_warper} is used.
 }
 \section{Functions}{
 \itemize{
@@ -30,7 +30,7 @@ representation of the data, if a \code{\link{pca_warper}} is used.
 }}
 
 \seealso{
-\code{\link{unwarp}} for the inverse transformation, and
-\code{\link{pca_warper}} for an example of a simple warper function based
-on the principal components transformation.
+\code{\link[=unwarp]{unwarp()}} for the inverse transformation, and
+\code{\link[=pca_warper]{pca_warper()}} for an example of a simple warper function based
+on the principal component transformation.
 }

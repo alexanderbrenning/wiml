@@ -12,11 +12,11 @@
 \arguments{
 \item{x}{The object to be backtransformed, for example a data frame or a \code{warped_df} object.}
 
-\item{warper}{A \code{warper} object as, for example, created by \code{\link{pca_warper}} for principal components transformations.}
+\item{warper}{A \code{warper} object as, for example, created by \code{\link[=pca_warper]{pca_warper()}} for principal components transformations.}
 
 \item{force_unwarp}{If \code{TRUE}, backtransform even if it's not a \code{warped_df} object. (Ignored by \code{unwarp.warped_df}.)}
 
-\item{...}{Additional arguments to be passed to the \code{unwarp} method.}
+\item{...}{Additional arguments to be passed to the \code{\link[=unwarp]{unwarp()}} method.}
 }
 \value{
 A data frame with features in the original feature space.
@@ -56,7 +56,7 @@ all.equal(d, d2[,colnames(d)])
 # transformations.
 }
 \seealso{
-\code{\link{warp}} for the forward transformation, and
-\code{\link{pca_warper}} for an example of a simple warper function based
+\code{\link[=warp]{warp()}} for the forward transformation, and
+\code{\link[=pca_warper]{pca_warper()}} for an example of a simple warper function based
 on the principal components transformation.
 }

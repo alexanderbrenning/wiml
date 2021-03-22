@@ -113,7 +113,7 @@ prd <- predict(warped_fit, newdata = newd)$posterior
 profile_plots(1)
 }
 \seealso{
-\code{\link{warp_fitted_model}} for creating a warped machine-learning
-model, and the \code{\link{predict}} method of your machine-learning model
+\code{\link[=warp_fitted_model]{warp_fitted_model()}} for creating a warped machine-learning
+model, and the \code{predict} method of your machine-learning model
 for details on additional arguments and the returned values.
 }

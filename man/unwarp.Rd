@@ -9,7 +9,7 @@ unwarp(x, ...)
 \arguments{
 \item{x}{The object to be backtransformed, for example a data frame or a \code{warped_df} object.}
 
-\item{...}{Additional arguments to be passed to the \code{unwarp} method.}
+\item{...}{Additional arguments to be passed to the \code{\link[=unwarp]{unwarp()}} method.}
 }
 \value{
 A data frame with features in the original feature space.
@@ -44,7 +44,7 @@ all.equal(d, d2[,colnames(d)])
 # transformations.
 }
 \seealso{
-\code{\link{warp}} for the forward transformation, and
-\code{\link{pca_warper}} for an example of a simple warper function based
+\code{\link[=warp]{warp()}} for the forward transformation, and
+\code{\link[=pca_warper]{pca_warper()}} for an example of a simple warper function based
 on the principal components transformation.
 }
