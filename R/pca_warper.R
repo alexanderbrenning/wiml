@@ -1,7 +1,7 @@
 
 #' Principal components transformation of feature space
 #'
-#' This function generates a \code{warper} object based on a principal components
+#' This function generates a `warper` object based on a principal component
 #' analysis of the features (or more precisely, of selected features \code{xvars}).
 #'
 #' @param xdata A data frame containing the observations in the original feature space.
@@ -20,10 +20,13 @@
 #'     strongly weighted PC gets a positive sign.
 #' @param title Optional name of the transformation, may be used for printing summaries
 #'     or for plotting.
-#' @return An object of class \code{warper}, \code{rotation_warper} and \code{pca_warper}.
-#' @details The function will make an effort to ensure that there's no overlap
-#'     between \code{xvars}, \code{uvars} and \code{yvar}; however, ideally
-#'     these arguments should not overlap.
+#' @return An object of class `warper`, `rotation_warper` and `pca_warper`.
+#' @details There should be no overlap
+#'     between `xvars`, `uvars` and `yvar`.
+#'     The rotation matrix `$full_rotation` in the results object
+#'     is of size `length(xvars)+length(uvars)` and includes an
+#'     identity transformation `diag(length(uvars))` for the
+#'     features in `uvars`.
 #' @example examples/pca_warper.R
 #' @export
 pca_warper <- function(xdata, xvars, wvars = "PC", yvar, uvars = NULL,
@@ -111,7 +114,7 @@ pca_warper <- function(xdata, xvars, wvars = "PC", yvar, uvars = NULL,
 
 #' Plot a PCA warper transformation object
 #'
-#' This method plots standard PCA summary diagrams for a `pca_warper`, i.e. a principal components transformation of feature space.
+#' This method plots standard PCA summary diagrams for a `pca_warper`, i.e. a principal component transformation of feature space.
 #'
 #' @param object A \code{\link{pca_warper}} object.
 #' @param which Which plots to plot: screeplot (`1`), biplot (`2`).
@@ -161,7 +164,7 @@ summary.pca_warper <- function(object, ...) {
 
 #' Print summary of `pca_warper` object
 #'
-#' @param x `summary.pca_warper` object for principal components transformation of feature space
+#' @param x `summary.pca_warper` object for principal component transformation of feature space
 #' @param ... Additional arguments for [stats::print.summary.prcomp()],
 #'
 #' @return Returns the `summary.pca_warper` object.

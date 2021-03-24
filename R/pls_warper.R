@@ -1,17 +1,17 @@
 
 #' Partial least squares transformation of feature space
 #'
-#' This function generates a \code{warper} object based on a partial least squares
+#' This function generates a `warper` object based on a partial least squares
 #' transformation with respect to a selected feature.
 #'
 #' @param xdata A data frame containing the observations in the original feature space.
-#' @param pvars A character string identifying one feature in \code{xdata}
+#' @param pvars A character string identifying one feature in `xdata`
 #'     that is used as the selected feature; the other features in
 #'     `xvars` will be transformed by orthogonalization, while
 #'     this one will remain unchanged.
 #' @param wvars A character string giving a prefix for partial residual features.
 #' @inheritParams pca_warper
-#' @return An object of class \code{warper}, \code{rotation_warper} and \code{pls_warper}.
+#' @return An object of class `warper`, `rotation_warper` and `pls_warper`.
 #' @details The arguments
 #'     `pvars`, `xvars`, `uvars` and `yvar` should not overlap.
 #' @example examples/pls_warper.R

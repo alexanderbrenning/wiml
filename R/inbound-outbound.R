@@ -1,18 +1,18 @@
 #' Generic methods for forward (outbound) and backward (inbound) feature space transformation using warper objects
 #'
 #' Outbound or forward transformation refers to the mapping \eqn{T}
-#' from feature space into a transformed space (e.g., principal components space),
+#' from feature space into a transformed space (e.g., principal component space),
 #' and inbound or backward transformation is its inverse transformation \eqn{T^{1}}
 #' back into feature space.
 #'
-#' @param object A \code{warper} object, such as a \code{\link{pca_warper}}
-#'     for principal components transformations.
+#' @param object A `warper` object, e.g. created by calling [pca_warper()]
+#'     for a principal component transformation.
 #' @param ... Additional arguments for the corresponding method.
-#' @return A transformed data frame of class \code{warped_df} (for outbound)
-#'   or \code{data.frame} (for inbound transformations).
+#' @return A transformed data frame of class `warped_df` (for outbound)
+#'   or `data.frame` (for inbound transformations).
 #' @details These functions are mainly intended for internal use.
-#'   The \code{\link{warp}} and \code{\link{unwarp}} methods are more
-#'   user-friendly.
+#'   The [warp()] and [unwarp()] methods are more
+#'   user-oriented interfaces.
 #' @export
 outbound <- function(object, ...) {
   UseMethod("outbound", object)
@@ -29,21 +29,21 @@ inbound <- function(object, ...) {
 #' Methods for forward (outbound) and backward (inbound) feature space transformation using warper objects
 #'
 #' Outbound or forward transformation refers to the mapping \eqn{T}
-#' from feature space into a transformed space (e.g., principal components space),
+#' from feature space into a transformed space (e.g., principal component space),
 #' and inbound or backward transformation is its inverse transformation \eqn{T^{1}}
 #' back into feature space. This is an abstract parent class for [pca_warper]
 #' and other related objects that can be expressed using rotation matrices.
 #'
-#' @param object A \code{warper} object.
+#' @param object A `warper` object.
 #' @param xdata A data frame with features in the original, untransformed
 #'     feature space.
 #' @param wdata A data frame containing data in transformed space.
 #' @param ... Currently not used.
-#' @return A transformed data frame of class \code{warped_df} (for outbound)
-#'   or \code{data.frame} (for inbound transformations).
+#' @return A transformed data frame of class `warped_df` (for outbound)
+#'   or `data.frame` (for inbound transformations).
 #' @details These functions are mainly intended for internal use.
-#'   The \code{\link{warp}} and \code{\link{unwarp}} methods are more
-#'   user-friendly.
+#'   The [warp()] and [unwarp()] methods are more
+#'   user-oriented interfaces.
 #' @export
 inbound.rotation_warper <- function(object, wdata = object$wdata, ...) {
   chkDots(...)
@@ -81,16 +81,16 @@ inbound.rotation_warper <- function(object, wdata = object$wdata, ...) {
 #' and inbound or backward transformation is its inverse transformation \eqn{T^{1}}
 #' back into feature space.
 #'
-#' @param object A \code{warper} object created by \code{\link{pca_warper}}
-#'     for principal components transformations.
+#' @param object A `warper` object, e.g. created by calling [pca_warper()]
+#'     for a principal component transformation.
 #' @param wdata A data frame containing data in transformed space, i.e.
-#'     coordinates with respect to principal components axes.
-#' @param ... Additional arguments to be passed to `inbound.rotation_warper`
-#' @return A transformed data frame of class \code{warped_df} (for outbound)
-#'   or \code{data.frame} (for inbound transformations).
+#'     coordinates with respect to principal axes.
+#' @param ... Additional arguments to be passed to [inbound.rotation_warper()]
+#' @return A transformed data frame of class `warped_df` (for outbound)
+#'   or `data.frame` (for inbound transformations).
 #' @details These functions are mainly intended for internal use.
-#'   The \code{\link{warp}} and \code{\link{unwarp}} methods are more
-#'   user-friendly.
+#'   The [warp()] and [unwarp()] methods are more
+#'   user-oriented interfaces.
 #' @export
 inbound.pca_warper <- function(object, wdata = object$pca$x, ...) {
   inbound.rotation_warper(object = object, wdata = wdata, ...)

@@ -1,25 +1,25 @@
 
-#' Structured principal components transformation of feature space
+#' Structured principal component transformation of feature space
 #'
 #' This function offers a more structured approach to feature space transformation
 #' by allowing the user to transform different groups of predictor variables
-#' separately. It generates a \code{warper} object based on a principal components
-#' analyes applied to the feature subsets.
+#' separately. It generates a `warper` object based on principal component
+#' analyses applied to the feature subsets.
 #'
 #' @param xdata A data frame containing the observations in the original feature space.
 #' @param xvars A list of character vectors with the column names of features in \code{xdata}
 #'     that should be transformed. Variables named in each list component are jointly
-#'     transformed using PCA. These groups shouldn't be too correlated amongst
+#'     transformed using PCA. These groups shouldn't be too strongly correlated amongst
 #'     each other.
-#' @param wvars A character vector of same length as \code{xvars} giving the prefixes
+#' @param wvars A character vector of same length as `xvars` giving the prefixes
 #'     to be used to generate the names of transformed predictors. If of length 1,
-#'     use prefix \code{"<wvars>[1]"} for first feature subset, i.e. \code{"PC[1]2"} for
-#'     second principal component from first feature subset. If \code{NULL}, use
-#'     \code{"PC"} as the prefix.
-#' @param uvars Optional list of same length as \code{xvars} with names of additional
+#'     use prefix `wvars[1]` for first feature subset, e.g. `"PC[1]2"` for
+#'     second principal component from first feature subset if
+#'     `wvars[1]` is `"PC"`. If `NULL`, use `"PC"` as the prefix.
+#' @param uvars Optional list of same length as `xvars` with names of additional
 #'     variables that should remain untouched.
 #' @inheritParams pca_warper
-#' @return An object of class \code{warper}, \code{rotation_warper} and \code{strucpca_warper}.
+#' @return An object of class `warper`, `rotation_warper` and `strucpca_warper`.
 #' @export
 strucpca_warper <- function(xdata, xvars, wvars = NULL, yvar, uvars = NULL,
                             center = TRUE, scale = TRUE,
