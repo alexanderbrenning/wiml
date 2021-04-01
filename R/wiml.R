@@ -7,7 +7,7 @@
 #' from such imagery. This package introduces a simple and pragmatic approach to
 #' dealing with this problem. This approach can be especially beneficial in
 #' situations where features tend to be linearly dependent, or in other words,
-#' where principal components analysis seems like a reasonable approach.
+#' where principal component analysis seems like a reasonable approach.
 #'
 #' @docType package
 #' @name wiml
