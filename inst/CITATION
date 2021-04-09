@@ -8,7 +8,7 @@ citEntry(entry = "Article",
   pages        = "arXiv:submit/3691062, submitted 9 Apr 2021",
 
   textVersion  =
-  paste("Brenning, A. (2011).",
+  paste("Brenning, A. (2021).",
         "Transforming Feature Space to Interpret Machine Learning Models.",
         "arXiv:submit/3691062, submitted 9 Apr 2021.")
 )
