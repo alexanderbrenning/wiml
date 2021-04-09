@@ -7,13 +7,13 @@
 \method{inbound}{pca_warper}(object, wdata = object$pca$x, ...)
 }
 \arguments{
-\item{object}{A \code{warper} object created by \code{\link{pca_warper}}
-for principal components transformations.}
+\item{object}{A \code{warper} object, e.g. created by calling \code{\link[=pca_warper]{pca_warper()}}
+for a principal component transformation.}
 
 \item{wdata}{A data frame containing data in transformed space, i.e.
-coordinates with respect to principal components axes.}
+coordinates with respect to principal axes.}
 
-\item{...}{Additional arguments to be passed to \code{inbound.rotation_warper}}
+\item{...}{Additional arguments to be passed to \code{\link[=inbound.rotation_warper]{inbound.rotation_warper()}}}
 }
 \value{
 A transformed data frame of class \code{warped_df} (for outbound)
@@ -27,6 +27,6 @@ back into feature space.
 }
 \details{
 These functions are mainly intended for internal use.
-The \code{\link{warp}} and \code{\link{unwarp}} methods are more
-user-friendly.
+The \code{\link[=warp]{warp()}} and \code{\link[=unwarp]{unwarp()}} methods are more
+user-oriented interfaces.
 }

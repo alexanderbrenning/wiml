@@ -25,15 +25,15 @@ or \code{data.frame} (for inbound transformations).
 }
 \description{
 Outbound or forward transformation refers to the mapping \eqn{T}
-from feature space into a transformed space (e.g., principal components space),
+from feature space into a transformed space (e.g., principal component space),
 and inbound or backward transformation is its inverse transformation \eqn{T^{1}}
 back into feature space. This is an abstract parent class for \link{pca_warper}
 and other related objects that can be expressed using rotation matrices.
 }
 \details{
 These functions are mainly intended for internal use.
-The \code{\link{warp}} and \code{\link{unwarp}} methods are more
-user-friendly.
+The \code{\link[=warp]{warp()}} and \code{\link[=unwarp]{unwarp()}} methods are more
+user-oriented interfaces.
 }
 \section{Functions}{
 \itemize{

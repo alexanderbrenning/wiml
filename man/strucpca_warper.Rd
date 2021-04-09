@@ -2,7 +2,7 @@
 % Please edit documentation in R/strucpca_warper.R
 \name{strucpca_warper}
 \alias{strucpca_warper}
-\title{Structured principal components transformation of feature space}
+\title{Structured principal component transformation of feature space}
 \usage{
 strucpca_warper(
   xdata,
@@ -21,14 +21,14 @@ strucpca_warper(
 
 \item{xvars}{A list of character vectors with the column names of features in \code{xdata}
 that should be transformed. Variables named in each list component are jointly
-transformed using PCA. These groups shouldn't be too correlated amongst
+transformed using PCA. These groups shouldn't be too strongly correlated amongst
 each other.}
 
 \item{wvars}{A character vector of same length as \code{xvars} giving the prefixes
 to be used to generate the names of transformed predictors. If of length 1,
-use prefix \code{"<wvars>[1]"} for first feature subset, i.e. \code{"PC[1]2"} for
-second principal component from first feature subset. If \code{NULL}, use
-\code{"PC"} as the prefix.}
+use prefix \code{wvars[1]} for first feature subset, e.g. \code{"PC[1]2"} for
+second principal component from first feature subset if
+\code{wvars[1]} is \code{"PC"}. If \code{NULL}, use \code{"PC"} as the prefix.}
 
 \item{yvar}{Name of the response variable (not to be transformed)}
 
@@ -56,6 +56,6 @@ An object of class \code{warper}, \code{rotation_warper} and \code{strucpca_warp
 \description{
 This function offers a more structured approach to feature space transformation
 by allowing the user to transform different groups of predictor variables
-separately. It generates a \code{warper} object based on a principal components
-analyes applied to the feature subsets.
+separately. It generates a \code{warper} object based on principal component
+analyses applied to the feature subsets.
 }

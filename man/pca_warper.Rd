@@ -45,13 +45,16 @@ or for plotting.}
 An object of class \code{warper}, \code{rotation_warper} and \code{pca_warper}.
 }
 \description{
-This function generates a \code{warper} object based on a principal components
+This function generates a \code{warper} object based on a principal component
 analysis of the features (or more precisely, of selected features \code{xvars}).
 }
 \details{
-The function will make an effort to ensure that there's no overlap
-between \code{xvars}, \code{uvars} and \code{yvar}; however, ideally
-these arguments should not overlap.
+There should be no overlap
+between \code{xvars}, \code{uvars} and \code{yvar}.
+The rotation matrix \verb{$full_rotation} in the results object
+is of size \code{length(xvars)+length(uvars)} and includes an
+identity transformation \code{diag(length(uvars))} for the
+features in \code{uvars}.
 }
 \examples{
 ### Create principal components warper for Maipo data set:

@@ -19,7 +19,7 @@
 Returns \code{NULL}
 }
 \description{
-This method plots standard PCA summary diagrams for a \code{pca_warper}, i.e. a principal components transformation of feature space.
+This method plots standard PCA summary diagrams for a \code{pca_warper}, i.e. a principal component transformation of feature space.
 }
 \examples{
 ### Create principal components warper for Maipo data set:

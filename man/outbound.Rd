@@ -10,8 +10,8 @@ outbound(object, ...)
 inbound(object, ...)
 }
 \arguments{
-\item{object}{A \code{warper} object, such as a \code{\link{pca_warper}}
-for principal components transformations.}
+\item{object}{A \code{warper} object, e.g. created by calling \code{\link[=pca_warper]{pca_warper()}}
+for a principal component transformation.}
 
 \item{...}{Additional arguments for the corresponding method.}
 }
@@ -21,14 +21,14 @@ or \code{data.frame} (for inbound transformations).
 }
 \description{
 Outbound or forward transformation refers to the mapping \eqn{T}
-from feature space into a transformed space (e.g., principal components space),
+from feature space into a transformed space (e.g., principal component space),
 and inbound or backward transformation is its inverse transformation \eqn{T^{1}}
 back into feature space.
 }
 \details{
 These functions are mainly intended for internal use.
-The \code{\link{warp}} and \code{\link{unwarp}} methods are more
-user-friendly.
+The \code{\link[=warp]{warp()}} and \code{\link[=unwarp]{unwarp()}} methods are more
+user-oriented interfaces.
 }
 \section{Functions}{
 \itemize{

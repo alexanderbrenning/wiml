@@ -7,7 +7,7 @@
 \method{print}{summary.pca_warper}(x, ...)
 }
 \arguments{
-\item{x}{\code{summary.pca_warper} object for principal components transformation of feature space}
+\item{x}{\code{summary.pca_warper} object for principal component transformation of feature space}
 
 \item{...}{Additional arguments for \code{\link[stats:prcomp]{stats::print.summary.prcomp()}},}
 }
