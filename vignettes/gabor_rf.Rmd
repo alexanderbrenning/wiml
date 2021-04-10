@@ -6,6 +6,13 @@ vignette: >
   %\VignetteIndexEntry{gabor_rf}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+keywords:
+   - interpretable machine learning
+   - dataset-level post-hoc interpretation
+   - predictive modelling
+   - model visualization
+   - feature space transformation
+bibliography: '`r here::here("../wiml.bib")`'
 ---
 
 ```{r, include = FALSE}
@@ -16,10 +23,12 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
-library(wiml)
+SAVE_IMAGE <- FALSE
+COMPLETE_ANALYSIS <- FALSE
+CACHE <- !COMPLETE_ANALYSIS
 ```
 
-# Preface{-}
+## Preface{-}
 
 This vignette walks you through the analyses performed for the paper that introduces the novel model interpretation approach implemented in the `wiml` package. Please refer to that paper for conceptual and formal details, and cite it when using `wiml` or referring to the methods and results presented herein.
 
@@ -27,16 +36,18 @@ This vignette walks you through the analyses performed for the paper that introd
 
 The `wiml` package serves as a thin wrapper around other packages implementing ALE plots, partial dependence plots and other post-hoc model-agnostic interpretation tools. In this vignette, I will use `iml`, and creating a version of this vignette for `DALEX` is also on my to-do list. Please remind me in case that's what you're looking for...
 
-Several of the following steps are computationally expensive and will be slow even on a workstation since the `iml` package, which does all the heavy lifting, does not seem to make full use of the parallel *workers* offered to it. Either way, we're prepared for parallel execution:
+For an introduction to interpretable machine learning, see [@molnar.2019.iml.book], and for a broader overview, [@murdoch.et.al.2019.iml].  We are specifically dealing with the situation of post-hoc model-agnostic dataset-level tools for the interpretation of black-box machine-learning models. 
+Several of the following steps are computationally expensive and will be slow even on a workstation since the `iml` package, which does all the heavy lifting, does not seem to make full use of the parallel *workers* offered to it, at least not at the time of writing this document.
 
-# Getting started
+## Getting started
 
-## Work environment
+### Work environment
 
-Make sure that all required packages and their dependencies are installed and up-to-date. `wiml` is currently only available via Github, so you will have to use `devtools` to install it.
+Make sure that all required packages and their dependencies are installed and up-to-date. `wiml` is currently only available via Github, so you will have to use `devtools` to install it; I also recommend using the most recent development version of `iml`.
 
 ```{r load_packages, echo = TRUE, results = "hide"}
 # install.packages("devtools")
+# install_github("https://github.com/christophM/iml")
 # install_github("https://github.com/alexanderbrenning/wiml")
 library("iml")
 library("wiml")
@@ -45,13 +56,16 @@ library("randomForest")
 library("sperrorest")
 ```
 
-In addition, you will need the packages `stringr`, `purrr`. Packages for parallelization are optional: `future`, `future.callr`. To parallelize computation where possible, (optionally) use the following call with the appropriate number of workers for your computing environment:
+In addition, you will need the packages `stringr`, `purrr`, `ggcorrplot`. Packages for parallelization are optional: `future`, `future.callr`. To parallelize computation where possible, you can (optionally) use the following call, specifying the number of workers appropriate for your computing environment:
 
 ```{r parallelization}
-future::plan(future.callr::callr, workers = 44)
+library("future")
+library("future.callr")
+plan("callr", workers = 44)
+options(future.rng.onMisuse = "ignore")
 ```
 
-Let's try to be reproducible (may not be successful when running in parallel), and prepare some settings for ALE and partial dependence plots:
+Let's make our results as reproducible as possible, and prepare some settings for ALE and partial dependence plots:
 
 ```{r set_seed, results='hide'}
 set.seed(444)
@@ -60,13 +74,19 @@ pdp_grid_size <- 100
 ```
 
 
-## Prepare data and model formulas
+### Case study and data preparation
 
 Land cover classification is a standard task in remote sensing, which often uses a large set of features ($20\le p\le200$) - for example, multitemporal spectral reflectances and derived vegetation indices and texture attributes, or even hyperspectral features. Many of these features are strongly correlated with each other, and they are often semantically grouped.
 
-We will look at a special and rather challenging 
+We will look at a rather challenging case study on the detection of rock glaciers in the Chilean Andes from a combination of 40 texture features and 6 terrain attributes. This is how a rock glacier looks like:
 
-```{r code}
+> placeholder for rock glacier photo
+
+The texture features were generated by applying Gabor filters with varying bandwidth, anisotropy and aggregation settings to an IKONOS satellite image, resulting in strongly correlated features. This case study is described in more detail by [@brenning.et.al.2012.gabor]. We use a sample of 1000 points from this data set's Laguna Negra area (500 presence and 500 absence locations), and will later do a spatial cross-validation between the Laguna Negra and Catedral areas.
+
+Let's get started by preparing the data set, which is shipped with the `wiml` package:
+
+```{r prepare}
 data(gabor, package = "wiml")
 d <- gabor
 
@@ -92,9 +112,7 @@ xvars <- c(gabor_vars, terrain_vars)
 uvars <- NULL
 
 # List for structured PCA:
-xvars_list <- list(
-  "Gabor" = gabor_vars
-)
+xvars_list <- list("Gabor" = gabor_vars)
 uvars_list <- terrain_vars
 
 # Formula for fitting the model with all features:
@@ -113,51 +131,61 @@ fo_ex <- list(
 # names of transformed variables of interest
 pc_vars <- paste0("PC", 1:6)
 
-
-
-
+# Trim the tails of distributions to remove outliers:
 d[,xvars] <- d[,xvars] %>% 
   purrr::map(DescTools::Winsorize, probs = c(0.02, 0.98)) %>%
-  as.data.frame()
+  as.data.frame() %>% scale()
+
 
 dtest <- d[ 1001:2000 , ]
 d <- d[ 1:1000 , ]
 ```
 
 
-## Exploratory analysis
+### Exploratory analysis
 
-```{r exploratory}
-# For each Gabor feature, find its largest (absolute) 
-# correlation with other Gabor features: 
-gabor_corrs <- abs(cor(d[, gabor_vars])) %>% 
-  as.data.frame() %>% 
-  purrr::map_df(sort, decreasing = TRUE) %>% 
-  purrr::map_dbl(dplyr::nth, n = 2)
-med_corr_gabor <- median(gabor_corrs)
-min_corr_gabor <- min(gabor_corrs)
+To show you how strongly the features are correlated, let's take a look at this correlation matrix; note that the terrain attribute are the six features at the top: 
 
-terrain_corrs <- abs(cor(d[, terrain_vars])) %>% 
-  as.data.frame() %>% 
-  purrr::map_df(sort, decreasing = TRUE) %>% 
-  purrr::map_dbl(dplyr::nth, n = 2)
-med_corr_terrain <- median(terrain_corrs)
-min_corr_terrain <- min(terrain_corrs)
-
-terrain_gabor_corrs <- abs(cor(d[,terrain_vars], d[,gabor_vars])) %>% 
-  as.data.frame() %>% 
-  purrr::map_df(sort, decreasing = TRUE) %>% 
-  purrr::map_dbl(dplyr::nth, n = 2)
-med_corr_terrain_gabor <- median(terrain_gabor_corrs)
-max_corr_terrain_gabor <- max(terrain_gabor_corrs)
+```{r corrplot}
+ggcorrplot::ggcorrplot(cor(d[,xvars]), type = "upper")
 ```
 
 
+```{r exploratory, echo = FALSE, results = "hide", include = FALSE}
+if (SAVE_IMAGE) {
+  # For each Gabor feature, find its largest (absolute)
+  # correlation with other Gabor features:
+  gabor_corrs <- abs(cor(d[, gabor_vars])) %>%
+    as.data.frame() %>%
+    purrr::map_df(sort, decreasing = TRUE) %>%
+    purrr::map_dbl(dplyr::nth, n = 2)
+  med_corr_gabor <- median(gabor_corrs)
+  min_corr_gabor <- min(gabor_corrs)
+  
+  terrain_corrs <- abs(cor(d[, terrain_vars])) %>%
+    as.data.frame() %>%
+    purrr::map_df(sort, decreasing = TRUE) %>%
+    purrr::map_dbl(dplyr::nth, n = 2)
+  med_corr_terrain <- median(terrain_corrs)
+  min_corr_terrain <- min(terrain_corrs)
+  
+  terrain_gabor_corrs <-
+    abs(cor(d[, terrain_vars], d[, gabor_vars])) %>%
+    as.data.frame() %>%
+    purrr::map_df(sort, decreasing = TRUE) %>%
+    purrr::map_dbl(dplyr::nth, n = 2)
+  med_corr_terrain_gabor <- median(terrain_gabor_corrs)
+  max_corr_terrain_gabor <- max(terrain_gabor_corrs)
+}
+```
 
-```{r code}
-# Train a random forest model using the Laguna Negra 
-# training area:
 
+## Post-hoc interpretation, the traditional way
+
+Train a random forest model using the Laguna Negra training area, and create ALE plots:
+
+
+```{r iml, cache = CACHE}
 fit <- randomForest::randomForest(formula = fo, data = d)
 
 simple_predictor <- Predictor$new(fit, data = d, y = yvar, 
@@ -167,137 +195,259 @@ simple_effs <- FeatureEffects$new(simple_predictor,
                                   method = "ale", 
                                   grid.size = ale_grid_size)
 
-## Prepare warper:
-simple_warp <- pca_warper(d, xvars = xvars, yvar = yvar, 
-                          uvars = uvars)
-simply_warped_fit <- warp_fitted_model(fit, 
-                                       warper = simple_warp)
+```
 
-simply_warped_predictor <- 
-  Predictor$new(simply_warped_fit, 
-                data = warp(d, warper = simple_warp), 
-                y = yvar, type = "prob", class = "TRUE")
-simply_warped_effs <- FeatureEffects$new(simply_warped_predictor, 
-                     features = pc_vars, 
-                     method = "ale", grid.size = ale_grid_size)
+```{r plotale}
+plot(simple_effs)
+```
 
 
+
+<!---
+
+## Interpretation in PCA-transformed space
+
+-->
+
+
+
+```{r pcawarp, include = COMPLETE_ANALYSIS, cache = CACHE}
+if (COMPLETE_ANALYSIS & SAVE_IMAGE) {
+  simple_warp <- pca_warper(d, xvars = xvars, yvar = yvar, 
+                            uvars = uvars)
+  simply_warped_fit <- warp_fitted_model(fit, 
+                                         warper = simple_warp)
+}
+```
+
+```{r pcaale, include = COMPLETE_ANALYSIS, cache = CACHE}
+if (COMPLETE_ANALYSIS & SAVE_IMAGE) {
+  simply_warped_predictor <- 
+    Predictor$new(simply_warped_fit, 
+                  data = warp(d, warper = simple_warp), 
+                  y = yvar, type = "prob", class = "TRUE")
+  simply_warped_effs <- FeatureEffects$new(simply_warped_predictor, 
+                       features = pc_vars, 
+                       method = "ale", grid.size = ale_grid_size)
+}
+```
+
+
+
+
+## Interpretation using structured PCA
+
+
+```{r strucpcawarp, cache = CACHE}
 struc_warp <- strucpca_warper(d, xvars = xvars_list, yvar = yvar, 
                           uvars = uvars_list, 
                           wvars = names(xvars_list))
 struc_warped_fit <- warp_fitted_model(fit, 
                                       warper = struc_warp)
+```
 
+
+```{r strucpcapred, echo = FALSE, results = "hide", cache = CACHE}
+smp_struc_warped_d <- warp(d[c(100, 200, 600, 700),], warper = struc_warp)
+str(smp_struc_warped_d)
+predict(struc_warped_fit, newdata = smp_struc_warped_d, type = "prob")
+```
+
+
+```{r strucpcaplot}
+par(mfrow = c(1,2))
+plot(struc_warp$warpers$Gabor)
+```
+
+
+
+```{r strucpcaimp, cache = CACHE}
 imp_struc_w_predictor <- Predictor$new(struc_warped_fit, 
                                        data = warp(dtest, warper = struc_warp), 
                                        y = yvar, 
                                        type = "response")
-imp <- FeatureImp$new(imp_struc_w_predictor, 
+struc_imp <- FeatureImp$new(imp_struc_w_predictor, 
                       loss = "ce", compare = "difference", 
                       n.repetitions = 100)
-#plot(imp)
-#imp$results$feature[1:8]
+```
 
-imp10 <- FeatureImp$new(imp_struc_w_predictor, 
+I'll spare you this messy plot, let's focus on the top 10 features (At the time of writing this document, the `features` argument was only available in the development version of `iml`):
+
+```{r strucpcaimp10, cache = CACHE}
+struc_imp10 <- FeatureImp$new(imp_struc_w_predictor, 
                       loss = "ce", compare = "difference",
-                      features = imp$results$feature[1:10],
+                      features = struc_imp$results$feature[1:10],
                       n.repetitions = 100)
+plot(struc_imp10)
+```
 
-struc_features <- c("Gabor1", "Gabor2", "Gabor3", 
-                    stringr::str_subset(imp$results$feature, "Gabor", negate = TRUE)[1:3])
+Next, we want to display accumulated local effects (ALE) plots as our preferred way of visualizing main effects of features in our black-box model ([@molnar.2019.iml.book]):
 
+```{r strucpcaaleprep}
+struc_top3_terrain_vars <- stringr::str_subset(
+  struc_imp$results$feature, "Gabor",
+  negate = TRUE)[1:3]
+struc_features <- c("Gabor1", "Gabor2", "Gabor3",
+                    struc_top3_terrain_vars)
+```
 
-struc_warped_predictor <- Predictor$new(struc_warped_fit, 
-                                        data = warp(d, warper = struc_warp), 
-                                        y = yvar, type = "prob", 
-                                        class = "TRUE")
-struc_warped_effs <- FeatureEffects$new(struc_warped_predictor, 
-                                        features = struc_features, 
-                                        method = "ale", 
-                                        grid.size = ale_grid_size)
-#plot(struc_warped_effs)
+```{r strucpcaale, cache = CACHE}
+struc_warped_predictor <- Predictor$new(
+  struc_warped_fit,
+  data = warp(d, warper = struc_warp),
+  y = yvar,
+  type = "prob",
+  class = "TRUE"
+)
+struc_warped_effs <- FeatureEffects$new(
+  struc_warped_predictor,
+  features = struc_features,
+  method = "ale",
+  grid.size = ale_grid_size
+)
+```
 
-struc_warped_effs_ale <- FeatureEffects$new(struc_warped_predictor, 
-                                            features = struc_features, 
-                                            method = "ale", 
-                                            grid.size = ale_grid_size)
-struc_warped_effs_pdp <- FeatureEffects$new(struc_warped_predictor, 
-                                            features = struc_features, 
-                                            method = "pdp", 
-                                            grid.size = pdp_grid_size)
-
-struc_warped_effs_2d <- FeatureEffect$new(struc_warped_predictor, 
-                                          feature = c("Gabor1", "Gabor2"), 
-                                          method = "ale", 
-                                          grid.size = rep(min(40,grid_size),2))
-
-struc_warped_effs_2d_ale <- 
-  FeatureEffect$new(struc_warped_predictor, 
-                    feature = c("Gabor1", "Gabor2"), 
-                    method = "ale", grid.size = c(20,20))
-struc_warped_effs_2d_ale2 <- 
-  FeatureEffect$new(struc_warped_predictor, 
-                    feature = c("Gabor3", "Gabor4"), 
-                    method = "ale", grid.size = c(20,20))
-struc_warped_effs_2d_pdp <- 
-  FeatureEffect$new(struc_warped_predictor, 
-                    feature = c("Gabor1", "Gabor2"), 
-                    method = "pdp", grid.size = c(40,40))
-struc_warped_effs_2d_pdp2 <- 
-  FeatureEffect$new(struc_warped_predictor, 
-                    feature = c("Gabor3", "Gabor4"), 
-                    method = "pdp", grid.size = c(40,40))
-
-
-# Estimate the mean cross-validation accuracy
-# using two-fold cross-validation between the two
-# regions, Laguna Negra and Catedral:
-estimate_accuracy <- function(formula, data = d) {
-  cvres <- sperrorest::sperrorest(formula, data = data, 
-                      model_fun = randomForest,
-                      pred_args = list(type = "response"), 
-                      smp_fun = partition_factor,
-                      smp_args = list(fac = "region", 
-                      repetition=1:1))
-  summary(cvres$error_rep)["test_accuracy", "mean"]
-}
-
-
-
-# Accuracy in two-fold cross-validation:
-dcv <- rbind(d, dtest)
-dcv$region <- as.factor(c(rep("LN", nrow(d)), rep("CAT", nrow(dtest))))
-
-acc <- estimate_accuracy(fo, data = dcv)
-acc_Terrain <- estimate_accuracy(fo_ex$Terrain, data = dcv)
-acc_Gabor <- estimate_accuracy(fo_ex$Gabor, data = dcv)
-acc_ex <- c(acc_Terrain, acc_Gabor)
-names(acc_ex) <- names(fo_ex)
-accdiff <- acc - acc_ex
-
-
-
-
-# For comparison, train and cross-validate a model
-# using the PC-transformed features:
-
-pcd <- warp(dcv, warper = simple_warp)
-pcd$region <- dcv$region
-pcfo <- as.formula(paste("class ~", 
-                         paste0(colnames(simple_warp$pca$x), 
-                                collapse = " + ")))
-pcfit <- randomForest(formula = pcfo, data = pcd)
-pc_acc <- estimate_accuracy(pcfo, data = pcd)
-
-
-# Save all results so they can be used in the paper:
-save.image(file = here::here("cache/wiml_gabor_results_rf.Rdata"))
-
+```{r strucpcaaleplot}
+plot(struc_warped_effs)
 ```
 
 
-# References{-}
+```{r strucpcapdp2d, cache = CACHE}
+struc_warped_effs_2d_pdp <-
+  FeatureEffect$new(
+    struc_warped_predictor,
+    feature = c("Gabor1", "Gabor2"),
+    method = "pdp",
+    grid.size = c(40, 40)
+  )
+```
 
-Brenning, A. (2011). Transforming Feature Space to Interpret Machine Learning Models. arXiv:submit/3691062, submitted 9 Apr 2021.
+```{r strucpcapdp2plot}
+plot(struc_warped_effs_2d_pdp)
+```
+
+
+```{r strucpcamore, echo = FALSE, results = "hide"}
+if (SAVE_IMAGE) {
+  struc_warped_effs_ale <-
+    FeatureEffects$new(
+      struc_warped_predictor,
+      features = struc_features,
+      method = "ale",
+      grid.size = ale_grid_size
+    )
+  struc_warped_effs_pdp <-
+    FeatureEffects$new(
+      struc_warped_predictor,
+      features = struc_features,
+      method = "pdp",
+      grid.size = pdp_grid_size
+    )
   
+  struc_warped_effs_2d <-
+    FeatureEffect$new(
+      struc_warped_predictor,
+      feature = c("Gabor1", "Gabor2"),
+      method = "ale",
+      grid.size = rep(min(40, grid_size), 2)
+    )
   
+  struc_warped_effs_2d_ale <-
+    FeatureEffect$new(
+      struc_warped_predictor,
+      feature = c("Gabor1", "Gabor2"),
+      method = "ale",
+      grid.size = c(20, 20)
+    )
+  struc_warped_effs_2d_ale2 <-
+    FeatureEffect$new(
+      struc_warped_predictor,
+      feature = c("Gabor3", "Gabor4"),
+      method = "ale",
+      grid.size = c(20, 20)
+    )
+  struc_warped_effs_2d_pdp2 <-
+    FeatureEffect$new(
+      struc_warped_predictor,
+      feature = c("Gabor3", "Gabor4"),
+      method = "pdp",
+      grid.size = c(40, 40)
+    )
+}
+```
+
+
+
+
+<!---
+
+## Performance comparison
+
+### Different feature subsets
+
+Estimate the mean cross-validation accuracy
+using two-fold cross-validation between the two
+regions, Laguna Negra and Catedral:
+
+-->
+
+```{r errorest, echo = FALSE, results = "hide"}
+if (SAVE_IMAGE) {
+  estimate_accuracy <- function(formula, data = d) {
+    cvres <- sperrorest::sperrorest(formula, data = data, 
+                        model_fun = randomForest,
+                        pred_args = list(type = "response"), 
+                        smp_fun = partition_factor,
+                        smp_args = list(fac = "region", 
+                        repetition=1:1))
+    summary(cvres$error_rep)["test_accuracy", "mean"]
+  }
+  
+  # Accuracy in two-fold cross-validation:
+  dcv <- rbind(d, dtest)
+  dcv$region <- as.factor(c(rep("LN", nrow(d)), rep("CAT", nrow(dtest))))
+  
+  acc <- estimate_accuracy(fo, data = dcv)
+  acc_Terrain <- estimate_accuracy(fo_ex$Terrain, data = dcv)
+  acc_Gabor <- estimate_accuracy(fo_ex$Gabor, data = dcv)
+  acc_ex <- c(acc_Terrain, acc_Gabor)
+  names(acc_ex) <- names(fo_ex)
+  accdiff <- acc - acc_ex
+}
+```
+
+
+<!---
+
+### Model using PCs as features
+
+For comparison, train and cross-validate a model
+using the PC-transformed features:
+-->
+
+```{r pcamodel, echo = FALSE, results = "hide"}
+if (SAVE_IMAGE) {
+  pcd <- warp(dcv, warper = simple_warp)
+  pcd$region <- dcv$region
+  pcfo <- as.formula(paste("class ~", 
+                           paste0(colnames(simple_warp$pca$x), 
+                                  collapse = " + ")))
+  pcfit <- randomForest(formula = pcfo, data = pcd)
+  pc_acc <- estimate_accuracy(pcfo, data = pcd)
+}
+```
+
+
+
+```{r saveimage, echo = FALSE, results = "hide"}
+# Save all results so they can be used in the paper:
+if (SAVE_IMAGE)
+  save.image(file = here::here("../cache/wiml_gabor_results_rf.Rdata"))
+```
+
+
+
+### References{-}
+
+<div id="refs"></div>
+
