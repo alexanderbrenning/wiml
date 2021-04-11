@@ -1,9 +1,13 @@
 ---
-title: "Transforming Feature Space to Interpret Machine Learning Models"
+title: "The `wiml` Package: Transforming Feature Space to Interpret Machine Learning Models"
 subtitle: "A Remote-Sensing Case Study Using the Random Forest Classifier"
-output: rmarkdown::html_vignette
+author: Alexander Brenning
+date: "First published 12 Apr 2021, last edited `r format(Sys.time(), '%d %b %Y')`"
+output: 
+  rmarkdown::html_vignette: default
+  github_document: default
 vignette: >
-  %\VignetteIndexEntry{gabor_rf}
+  %\VignetteIndexEntry{"The wiml Package: Transforming Feature Space to Interpret Machine Learning Models"}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 keywords:
@@ -12,29 +16,40 @@ keywords:
    - predictive modelling
    - model visualization
    - feature space transformation
-bibliography: '`r here::here("../wiml.bib")`'
+bibliography: wiml.bib
+csl: chicago-author-date.csl
 ---
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
+  fig.width = 7,
+  fig.height = 7,
+  fig.align = "center",
+  fig.path = "figures",
   comment = "#>"
 )
+options(rmarkdown.html_vignette.check_title = FALSE)
+# setwd("vignettes")
+# knitr::knit("gabor_rf.Rmd")
+
 ```
 
-```{r setup}
-SAVE_IMAGE <- FALSE
-COMPLETE_ANALYSIS <- FALSE
-CACHE <- !COMPLETE_ANALYSIS
+```{r setup, include=FALSE}
+CACHE <- TRUE
+do_cache <- function() {
+  if (!CACHE) 
+    CACHE <- sample(1:1000, size = 1)
+}
 ```
 
 ## Preface{-}
 
 This vignette walks you through the analyses performed for the paper that introduces the novel model interpretation approach implemented in the `wiml` package. Please refer to that paper for conceptual and formal details, and cite it when using `wiml` or referring to the methods and results presented herein.
 
-> Brenning, A. (2011). Transforming Feature Space to Interpret Machine Learning Models. arXiv:submit/3691062, submitted 9 Apr 2021.
+> @brenning.et.al.2021.wiml  Transforming Feature Space to Interpret Machine Learning Models. arXiv:submit/3691062, submitted 9 Apr 2021.
 
-The `wiml` package serves as a thin wrapper around other packages implementing ALE plots, partial dependence plots and other post-hoc model-agnostic interpretation tools. In this vignette, I will use `iml`, and creating a version of this vignette for `DALEX` is also on my to-do list. Please remind me in case that's what you're looking for...
+The `wiml` package serves as a thin wrapper around packages implementing ALE plots, partial dependence plots and other post-hoc model-agnostic interpretation tools. In this vignette, I will use `iml`; creating a vignette for use with `DALEX` is on my to-do list.
 
 For an introduction to interpretable machine learning, see [@molnar.2019.iml.book], and for a broader overview, [@murdoch.et.al.2019.iml].  We are specifically dealing with the situation of post-hoc model-agnostic dataset-level tools for the interpretation of black-box machine-learning models. 
 Several of the following steps are computationally expensive and will be slow even on a workstation since the `iml` package, which does all the heavy lifting, does not seem to make full use of the parallel *workers* offered to it, at least not at the time of writing this document.
@@ -45,7 +60,7 @@ Several of the following steps are computationally expensive and will be slow ev
 
 Make sure that all required packages and their dependencies are installed and up-to-date. `wiml` is currently only available via Github, so you will have to use `devtools` to install it; I also recommend using the most recent development version of `iml`.
 
-```{r load_packages, echo = TRUE, results = "hide"}
+```{r load_packages, echo = FALSE, results = "hide", message=FALSE, warning=FALSE}
 # install.packages("devtools")
 # install_github("https://github.com/christophM/iml")
 # install_github("https://github.com/alexanderbrenning/wiml")
@@ -53,24 +68,19 @@ library("iml")
 library("wiml")
 library("magrittr")
 library("randomForest")
-library("sperrorest")
+library("ggplot2")
+ggplot2::theme_set(theme_grey(base_size = 9))
 ```
 
-In addition, you will need the packages `stringr`, `purrr`, `ggcorrplot`. Packages for parallelization are optional: `future`, `future.callr`. To parallelize computation where possible, you can (optionally) use the following call, specifying the number of workers appropriate for your computing environment:
+In addition, you will need the packages `stringr`, `purrr`, `ggcorrplot`, `ggfortify`. Packages for parallelization are optional: `future`, `future.callr`. To parallelize computations, you can (optionally) use the following call, specifying the number of workers appropriate for your computing environment:
 
 ```{r parallelization}
 library("future")
 library("future.callr")
-plan("callr", workers = 44)
-options(future.rng.onMisuse = "ignore")
-```
-
-Let's make our results as reproducible as possible, and prepare some settings for ALE and partial dependence plots:
-
-```{r set_seed, results='hide'}
+future::plan("callr", workers = 20)
 set.seed(444)
-ale_grid_size <- 20
-pdp_grid_size <- 100
+options(future.rng.onMisuse = "ignore")
+# otherwise ALE plots will throw warnings...
 ```
 
 
@@ -78,371 +88,242 @@ pdp_grid_size <- 100
 
 Land cover classification is a standard task in remote sensing, which often uses a large set of features ($20\le p\le200$) - for example, multitemporal spectral reflectances and derived vegetation indices and texture attributes, or even hyperspectral features. Many of these features are strongly correlated with each other, and they are often semantically grouped.
 
-We will look at a rather challenging case study on the detection of rock glaciers in the Chilean Andes from a combination of 40 texture features and 6 terrain attributes. This is how a rock glacier looks like:
+We will look at a rather challenging case study on the detection of rock glaciers in the Chilean Andes from a combination of 40 texture features and 6 terrain attributes. This is how a rock glacier looks like - it resemles a lava stream more than a glacier:
 
-> placeholder for rock glacier photo
+```{r, echo=FALSE, out.width='60%', fig.cap='A rock glacier in the Andes of Santiago, Chile. (c) A. Brenning, CC BY-SA 4.0.'}
+knitr::include_graphics("figures/rockglacier.jpg")
+```
 
-The texture features were generated by applying Gabor filters with varying bandwidth, anisotropy and aggregation settings to an IKONOS satellite image, resulting in strongly correlated features. This case study is described in more detail by [@brenning.et.al.2012.gabor]. We use a sample of 1000 points from this data set's Laguna Negra area (500 presence and 500 absence locations), and will later do a spatial cross-validation between the Laguna Negra and Catedral areas.
+The texture features were generated by applying Gabor filters with varying bandwidth, anisotropy and aggregation settings to an IKONOS satellite image, resulting in strongly correlated features. This case study is described in more detail by [@brenning.et.al.2012.gabor]. We use a sample of 1000 points from this data set's Laguna Negra area (500 presence and 500 absence locations).
 
 Let's get started by preparing the data set, which is shipped with the `wiml` package:
 
 ```{r prepare}
 data(gabor, package = "wiml")
-d <- gabor
+d <- gabor[gabor$area == "LN", ]
+colnames(d) <- gsub("m30", "", colnames(d))
 
-dtrain <- d[d$area == "LN",]
-dtest <- d[d$area == "CAT",]
-sel_test <- c(sample(which(dtest$class == "FALSE"), size = 500),
-         sample(which(dtest$class == "TRUE"), size = 500))
-dtest <- dtest[sel_test,]
-sel_train <- c(sample(which(dtrain$class == "FALSE"), size = 500),
-              sample(which(dtrain$class == "TRUE"), size = 500))
-dtrain <- dtrain[sel_train,]
-d <- rbind(dtrain, dtest)
-
+sel <- c(sample(which(d$class == "FALSE"), size = 500),
+         sample(which(d$class == "TRUE"), size = 500))
+d <- d[sel,]
 
 # Set up lists of features and model formulas:
-gabor_vars <- stringr::str_subset(colnames(d), "^m.*e.*g.*")
+gabor_vars <- stringr::str_subset(colnames(d), "e[12]g[1-5]")
 terrain_vars <- c("dem", "slope", "pisr", 
                   "cslope", "log.carea", "log.cheight")
 yvar <- "class"
-
-# Features for plain PCA transformation:
-xvars <- c(gabor_vars, terrain_vars)
-uvars <- NULL
-
-# List for structured PCA:
-xvars_list <- list("Gabor" = gabor_vars)
-uvars_list <- terrain_vars
+Xvars <- c(gabor_vars, terrain_vars)
 
 # Formula for fitting the model with all features:
 fo <- as.formula(paste(yvar, "~", 
-                       paste(xvars, collapse = " + ")))
-
-# Formulas for models using subset of features:
-fo_ex <- list(
-  Terrain = as.formula(paste(yvar, "~", 
-                             paste(terrain_vars, collapse = " + "))),
-  Gabor = as.formula(paste(yvar, "~",
-                           paste(xvars_list$Gabor, collapse = " + ")))
-)
-
-# PCA transformation: 
-# names of transformed variables of interest
-pc_vars <- paste0("PC", 1:6)
+                       paste(Xvars, collapse = " + ")))
 
 # Trim the tails of distributions to remove outliers:
-d[,xvars] <- d[,xvars] %>% 
+d[, Xvars] <- d[, Xvars] %>% 
   purrr::map(DescTools::Winsorize, probs = c(0.02, 0.98)) %>%
-  as.data.frame() %>% scale()
-
-
-dtest <- d[ 1001:2000 , ]
-d <- d[ 1:1000 , ]
+  as.data.frame()
+# Scale only Gabor features:
+d[, gabor_vars] <- scale(d[, gabor_vars])
 ```
 
 
 ### Exploratory analysis
 
+(Impatient readers: please skip this section.)
+
 To show you how strongly the features are correlated, let's take a look at this correlation matrix; note that the terrain attribute are the six features at the top: 
 
-```{r corrplot}
-ggcorrplot::ggcorrplot(cor(d[,xvars]), type = "upper")
+```{r corrplot, out.width='80%'}
+ggcorrplot::ggcorrplot(cor(d[, Xvars]), type = "upper") +
+  ggplot2::theme_grey(base_size = 8)
 ```
 
 
-```{r exploratory, echo = FALSE, results = "hide", include = FALSE}
-if (SAVE_IMAGE) {
-  # For each Gabor feature, find its largest (absolute)
-  # correlation with other Gabor features:
-  gabor_corrs <- abs(cor(d[, gabor_vars])) %>%
-    as.data.frame() %>%
-    purrr::map_df(sort, decreasing = TRUE) %>%
-    purrr::map_dbl(dplyr::nth, n = 2)
-  med_corr_gabor <- median(gabor_corrs)
-  min_corr_gabor <- min(gabor_corrs)
-  
-  terrain_corrs <- abs(cor(d[, terrain_vars])) %>%
-    as.data.frame() %>%
-    purrr::map_df(sort, decreasing = TRUE) %>%
-    purrr::map_dbl(dplyr::nth, n = 2)
-  med_corr_terrain <- median(terrain_corrs)
-  min_corr_terrain <- min(terrain_corrs)
-  
-  terrain_gabor_corrs <-
-    abs(cor(d[, terrain_vars], d[, gabor_vars])) %>%
-    as.data.frame() %>%
-    purrr::map_df(sort, decreasing = TRUE) %>%
-    purrr::map_dbl(dplyr::nth, n = 2)
-  med_corr_terrain_gabor <- median(terrain_gabor_corrs)
-  max_corr_terrain_gabor <- max(terrain_gabor_corrs)
-}
+To wrap our head around the information contained in the texture features, we take a look at a principal components analysis (PCA) - the following plot shows the weights of the (standardized) texture features in the first four principal components, which explain about 85% of the variance:
+
+```{r strucpcaplot2, out.width='50%', message=FALSE, warning=FALSE}
+library("ggfortify")
+ggplot2::autoplot(prcomp(d[, gabor_vars])$rotation[,1:4]) +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+   midpoint = 0, limit = c(-.4,.4), space = "Lab", 
+   name="Weight") +
+  ggplot2::theme_grey(base_size = 9)
 ```
 
 
 ## Post-hoc interpretation, the traditional way
 
-Train a random forest model using the Laguna Negra training area, and create ALE plots:
+Before we apply the feature space transformation I propose in the paper, let's start with a traditional post-hoc interpretation at the level of the original features. We will train a random forest model on our 46 features, and create accumulated local effects (ALE) plots as our preferred way of visualizing the main effects of features in our black-box model [@molnar.2019.iml.book]:
 
+```{r trainrf, cache = TRUE, cache.extra = do_cache()}
+fit <- randomForest::randomForest(formula = fo, data = d, importance = TRUE)
+```
 
-```{r iml, cache = CACHE}
-fit <- randomForest::randomForest(formula = fo, data = d)
-
+```{r iml, cache = TRUE, cache.extra = do_cache()}
 simple_predictor <- Predictor$new(fit, data = d, y = yvar, 
                                   type = "prob", class = "TRUE")
 simple_effs <- FeatureEffects$new(simple_predictor, 
-                                  features = xvars, 
-                                  method = "ale", 
-                                  grid.size = ale_grid_size)
+                                  features = Xvars, 
+                                  method = "ale")
 
 ```
 
-```{r plotale}
-plot(simple_effs)
+Well that took some time... here's finally our figure:
+
+```{r plotale, out.width='100%'}
+plot(simple_effs, ncols = 8)
 ```
 
+Can you find a pattern? You're probably totally lost because you don't know what the texture feature names mean; but trust me, it doesn't get much better if you know their meanings. How about showing this figure to a conference audience? Better don't try...
 
+The same thing happens if we look at permutation-based variable importances, which are also problematic due to the strong correlations. We'll take a quick look using `randomForest`'s built-in method:
 
-<!---
-
-## Interpretation in PCA-transformed space
-
--->
-
-
-
-```{r pcawarp, include = COMPLETE_ANALYSIS, cache = CACHE}
-if (COMPLETE_ANALYSIS & SAVE_IMAGE) {
-  simple_warp <- pca_warper(d, xvars = xvars, yvar = yvar, 
-                            uvars = uvars)
-  simply_warped_fit <- warp_fitted_model(fit, 
-                                         warper = simple_warp)
-}
+```{r varimpplot, out.width='60%'}
+randomForest::varImpPlot(fit, n.var = 20, type = 1)
 ```
 
-```{r pcaale, include = COMPLETE_ANALYSIS, cache = CACHE}
-if (COMPLETE_ANALYSIS & SAVE_IMAGE) {
-  simply_warped_predictor <- 
-    Predictor$new(simply_warped_fit, 
-                  data = warp(d, warper = simple_warp), 
-                  y = yvar, type = "prob", class = "TRUE")
-  simply_warped_effs <- FeatureEffects$new(simply_warped_predictor, 
-                       features = pc_vars, 
-                       method = "ale", grid.size = ale_grid_size)
-}
-```
+## Model interpretation in transformed feature space
+
+Now you may remember that many of the texture features are strongly correlated, and according to our domain knowledge, they are semantically related to each other as the features correspond to isotropic or anisotropic Gabor filters, wavelengths from 5 to 50 m, and four different aggregation schemes. We'd really like to think about decomposing their variance into... principal components!
+
+The relationships between the texture features are in fact reasonably close to linear, and principal component analysis (PCA) is therefore an obvious choice for feature engineering. We may be tempted to retrain our model using the principal components (PCs) instead of the original features. Nevertheless, there are two reasons why I'm going down that road:
+
+1. Feature engineering, and PCA in particular, does not always improve model performance; it may in fact be harmful. (Spoiler: It's not harmful in this case study.)
+2. More importantly, in post-hoc analyses, we are not normally able or allowed to retrain the model. The whole point of post-hoc methods is that they can be applied to trained models.
+
+But how can we examine our model's behaviour from a PCA perspective without retraining the model?
+
+Here's the trick: We'll use an invertible transformation function as a pair of glasses that'll allow us to inspect the model's behaviour. The transformation function we'll be using is a principal component transformation.
+
+I'll briefly outline the mathematical formalism, in case you're interested. We're dealing with a model 
+$$\hat{f}:\mathbf{x}\in\mathbb{R}^p\mapsto\hat{f}(\mathbf{x})\in\mathbb{R}$$ 
+that was fitted to a training sample $L$ in the (original, untransformed) $p$-dimensional feature space $X\subset\mathbb{R}^p$, where the predicted values are probabilities or logits, in the case of classifiers. We'll use an invertible transformation function
+$$
+\mathbf{T}: X \rightarrow W\subset\mathbb{R}^p,\quad \mathbf{w} = \mathbf{T}(\mathbf{x})
+$$
+that re-express the features in our dataset in a way that makes sense to us as domain scientists. PCA seems reasonable here, but other transformations can be considered (some thoughts on this in the paper).
+
+The composition of the back transformation $\mathbf{T}^{-1}$ and the trained model function $\hat{f}$ now formally defines a model $\hat{g}$ on $W$,
+$$
+\hat{g} := \hat{f}\circ\mathbf{T}^{-1}
+$$
+which predicts the real-valued response based on 'data' in $W$ although it was trained using a learning sample $L\subset X$ in the untransformed feature space. So $\mathbf{T}^{-1}$ is the 'thin layer' I was talking about - a set of glasses, or maybe in this case we should call it a 'macroscope' as we're aggregating information into principal components. The function $\hat{g}$ behaves exactly like a model trained on $\mathbf{T}(L)$, both mathematically and computationally, and therefore we can fool any interpretation tool or R package by applying them to $\hat{g}$ instead of $\hat{f}$.
+
+Note that the PCs are linearly independent, and therefore we also overcome the issue we had with permutation variable importances calculated from strongly correlated features.
+
+Before we continue, there's still one pitfall to avoid: If we apply PCA to all features, we will 'mix' information from the texture and terrain features, although they are weakly correlated and semantically completely different. We will therefore use a transformation that does PCA on the texture features, and nothing (i.e. an identity transformation) on the terrain attributes. (This is achieved by creating a rotation matrix that is composed of two block matrices.)
+
+By the way, `wiml` also allows us to perform (truely) structured PCAs, i.e. seperate PCAs on subsets of features. This would be useful here if the terrain attributes were strongly correlated, which is not the case.
 
 
 
 
 ## Interpretation using structured PCA
 
+So let's define a structured transformation function $\mathbf{T}$ that PCA-transforms the 40 texture feature, but leaves the terrain attributes untouched.
 
-```{r strucpcawarp, cache = CACHE}
-struc_warp <- strucpca_warper(d, xvars = xvars_list, yvar = yvar, 
-                          uvars = uvars_list, 
-                          wvars = names(xvars_list))
-struc_warped_fit <- warp_fitted_model(fit, 
-                                      warper = struc_warp)
+The `wiml` package refers to transformation functions as *warpers*, just because it sounds cool.
+
+```{r strucpcawarp, cache = TRUE, cache.extra = do_cache()}
+# List for structured PCA:
+wrp <- pca_warper(d, xvars = gabor_vars, yvar = yvar, 
+                  uvars = terrain_vars, wvars = "Gabor")
 ```
 
+This is an object of class `warper`, which in this case is built around a `prcomp` object. Its `plot` method provides some insights into the PCA - we've seen enough of that in the exploratory analysis.
 
-```{r strucpcapred, echo = FALSE, results = "hide", cache = CACHE}
-smp_struc_warped_d <- warp(d[c(100, 200, 600, 700),], warper = struc_warp)
-str(smp_struc_warped_d)
-predict(struc_warped_fit, newdata = smp_struc_warped_d, type = "prob")
+So now we've got our transformation function $\mathbf{T}$, which can be applied to a dataset by using the `warp` method, and whose inverse is given by the inverse of its rotation matrix and implemented in the `unwarp` method.
+
+We now have to wrap our transformation around the trained model, i.e. create the composition $\hat{f}\circ\mathbf{T}^{-1}$:
+
+```{r strucpcawarpfit, cache=TRUE, cache.extra=do_cache()}
+wfit <- warp_fitted_model(fit, warper = wrp)
 ```
 
+This doesn't really 'do' anything - it simply creates an object of class `warped_model`, which is equipped with a `predict` method. This method accepts inputs in transformed feature space, i.e. texture PCs and (unchanged) terrain attributes, and then feeds our trained model `fit` (or $\hat{f}$) with back tranformed features in the original feature space. Let's try that out:
 
-```{r strucpcaplot}
-par(mfrow = c(1,2))
-plot(struc_warp$warpers$Gabor)
+```{r strucpcapred, echo = FALSE, results = "hide", cache = TRUE, cache.extra = do_cache()}
+smp_warped_d <- warp(d[c(100, 200, 600, 700),], warper = wrp)
+str(smp_warped_d)
+predict(wfit, newdata = smp_warped_d, type = "prob")
 ```
 
+### Permutation variable importance
+
+As you can see, our small sample of four points actually consisted of PC data (features `Gabor1` etc.), and `wfit` behaves like a model that was fitted on PC-transformed data.
+
+This means that we're ready to fool *any* model-agnostic interpretation tool - just don't tell'em that 'wfit' is not a real model!
 
 
-```{r strucpcaimp, cache = CACHE}
-imp_struc_w_predictor <- Predictor$new(struc_warped_fit, 
-                                       data = warp(dtest, warper = struc_warp), 
-                                       y = yvar, 
-                                       type = "response")
-struc_imp <- FeatureImp$new(imp_struc_w_predictor, 
+### Permutation variable importance
+
+We'll start with the permutation variable importance:
+
+```{r strucpcaimp, cache = TRUE, cach.extra = do_cache()}
+imp_wpredictor <- Predictor$new(wfit, 
+                                data = warp(d, warper = wrp), 
+                                y = yvar, type = "response")
+imp <- FeatureImp$new(imp_wpredictor, 
                       loss = "ce", compare = "difference", 
-                      n.repetitions = 100)
+                      n.repetitions = 50)
 ```
 
 I'll spare you this messy plot, let's focus on the top 10 features (At the time of writing this document, the `features` argument was only available in the development version of `iml`):
 
-```{r strucpcaimp10, cache = CACHE}
-struc_imp10 <- FeatureImp$new(imp_struc_w_predictor, 
+```{r strucpcaimp10, cache = TRUE, cache.extra = do_cache()}
+imp10 <- FeatureImp$new(imp_wpredictor, 
                       loss = "ce", compare = "difference",
-                      features = struc_imp$results$feature[1:10],
-                      n.repetitions = 100)
-plot(struc_imp10)
+                      features = imp$results$feature[1:10],
+                      n.repetitions = 50)
 ```
 
-Next, we want to display accumulated local effects (ALE) plots as our preferred way of visualizing main effects of features in our black-box model ([@molnar.2019.iml.book]):
+```{r strucpcaimp10plot, out.width='50%'}
+ggplot2::theme_set(theme_grey(base_size = 12)) # back to normal
+plot(imp10)
+```
+
+So, the first two principal components of Gabor texture features *are* indeed important. `Gabor1` is essentially the mean value across all texture features - an overall measure of stripedness - which underlines that we're doing the right thing when applying Gabor filters. This, and the information we gain from PCs #2 and #3, weren't visible at all in the original variable importance plot above.
+
+Also note that permutation on the untransformed feature resulting in a lot of extrapolation beyond the data-supported region due to the strong correlations between features. This is not the case here any more - the PCs are uncorrelated!
+
+
+### Main effects: ALE plots
+
+Next, we want to display **accumulated local effects (ALE) plots** as our preferred way of visualizing main effects of features in our black-box model ([@molnar.2019.iml.book]):
 
 ```{r strucpcaaleprep}
-struc_top3_terrain_vars <- stringr::str_subset(
-  struc_imp$results$feature, "Gabor",
-  negate = TRUE)[1:3]
-struc_features <- c("Gabor1", "Gabor2", "Gabor3",
-                    struc_top3_terrain_vars)
+top3_terrain_vars <- stringr::str_subset(
+  imp$results$feature, "Gabor", negate = TRUE)[1:3]
+wfeatures <- c("Gabor1", "Gabor2", "Gabor3",
+               top3_terrain_vars)
 ```
 
-```{r strucpcaale, cache = CACHE}
-struc_warped_predictor <- Predictor$new(
-  struc_warped_fit,
-  data = warp(d, warper = struc_warp),
-  y = yvar,
-  type = "prob",
-  class = "TRUE"
+```{r strucpcaale, cache = TRUE, cache.extra = do_cache()}
+wpredictor <- Predictor$new(
+  wfit, data = warp(d, warper = wrp),
+  y = yvar, type = "prob", class = "TRUE"
 )
-struc_warped_effs <- FeatureEffects$new(
-  struc_warped_predictor,
-  features = struc_features,
-  method = "ale",
-  grid.size = ale_grid_size
-)
+weffs <- FeatureEffects$new(wpredictor, features = wfeatures)
 ```
 
-```{r strucpcaaleplot}
-plot(struc_warped_effs)
+```{r strucpcaaleplot, out.width='80%'}
+plot(weffs)
 ```
 
+This is much tidier than the 46 ALE plots shown earlier, and domain experts are perfectly able to explain this to an educated audience.
 
-```{r strucpcapdp2d, cache = CACHE}
-struc_warped_effs_2d_pdp <-
-  FeatureEffect$new(
-    struc_warped_predictor,
-    feature = c("Gabor1", "Gabor2"),
-    method = "pdp",
-    grid.size = c(40, 40)
-  )
+What about interactions? In untransformed feature space, it would be absolutely impossible to look at all the $p*(p-1)/2$ pairwise interactions; now we essentially
+
+We can also look at interactions between
+
+```{r strucpcapdp2d, cache = TRUE, cache.extra = do_cache()}
+weffs_2d_pdp <- FeatureEffect$new(
+    wpredictor, feature = c("Gabor1", "Gabor2"),
+    method = "pdp", grid.size = c(20, 20))
 ```
 
-```{r strucpcapdp2plot}
-plot(struc_warped_effs_2d_pdp)
-```
-
-
-```{r strucpcamore, echo = FALSE, results = "hide"}
-if (SAVE_IMAGE) {
-  struc_warped_effs_ale <-
-    FeatureEffects$new(
-      struc_warped_predictor,
-      features = struc_features,
-      method = "ale",
-      grid.size = ale_grid_size
-    )
-  struc_warped_effs_pdp <-
-    FeatureEffects$new(
-      struc_warped_predictor,
-      features = struc_features,
-      method = "pdp",
-      grid.size = pdp_grid_size
-    )
-  
-  struc_warped_effs_2d <-
-    FeatureEffect$new(
-      struc_warped_predictor,
-      feature = c("Gabor1", "Gabor2"),
-      method = "ale",
-      grid.size = rep(min(40, grid_size), 2)
-    )
-  
-  struc_warped_effs_2d_ale <-
-    FeatureEffect$new(
-      struc_warped_predictor,
-      feature = c("Gabor1", "Gabor2"),
-      method = "ale",
-      grid.size = c(20, 20)
-    )
-  struc_warped_effs_2d_ale2 <-
-    FeatureEffect$new(
-      struc_warped_predictor,
-      feature = c("Gabor3", "Gabor4"),
-      method = "ale",
-      grid.size = c(20, 20)
-    )
-  struc_warped_effs_2d_pdp2 <-
-    FeatureEffect$new(
-      struc_warped_predictor,
-      feature = c("Gabor3", "Gabor4"),
-      method = "pdp",
-      grid.size = c(40, 40)
-    )
-}
-```
-
-
-
-
-<!---
-
-## Performance comparison
-
-### Different feature subsets
-
-Estimate the mean cross-validation accuracy
-using two-fold cross-validation between the two
-regions, Laguna Negra and Catedral:
-
--->
-
-```{r errorest, echo = FALSE, results = "hide"}
-if (SAVE_IMAGE) {
-  estimate_accuracy <- function(formula, data = d) {
-    cvres <- sperrorest::sperrorest(formula, data = data, 
-                        model_fun = randomForest,
-                        pred_args = list(type = "response"), 
-                        smp_fun = partition_factor,
-                        smp_args = list(fac = "region", 
-                        repetition=1:1))
-    summary(cvres$error_rep)["test_accuracy", "mean"]
-  }
-  
-  # Accuracy in two-fold cross-validation:
-  dcv <- rbind(d, dtest)
-  dcv$region <- as.factor(c(rep("LN", nrow(d)), rep("CAT", nrow(dtest))))
-  
-  acc <- estimate_accuracy(fo, data = dcv)
-  acc_Terrain <- estimate_accuracy(fo_ex$Terrain, data = dcv)
-  acc_Gabor <- estimate_accuracy(fo_ex$Gabor, data = dcv)
-  acc_ex <- c(acc_Terrain, acc_Gabor)
-  names(acc_ex) <- names(fo_ex)
-  accdiff <- acc - acc_ex
-}
-```
-
-
-<!---
-
-### Model using PCs as features
-
-For comparison, train and cross-validate a model
-using the PC-transformed features:
--->
-
-```{r pcamodel, echo = FALSE, results = "hide"}
-if (SAVE_IMAGE) {
-  pcd <- warp(dcv, warper = simple_warp)
-  pcd$region <- dcv$region
-  pcfo <- as.formula(paste("class ~", 
-                           paste0(colnames(simple_warp$pca$x), 
-                                  collapse = " + ")))
-  pcfit <- randomForest(formula = pcfo, data = pcd)
-  pc_acc <- estimate_accuracy(pcfo, data = pcd)
-}
-```
-
-
-
-```{r saveimage, echo = FALSE, results = "hide"}
-# Save all results so they can be used in the paper:
-if (SAVE_IMAGE)
-  save.image(file = here::here("../cache/wiml_gabor_results_rf.Rdata"))
+```{r strucpcapdp2plot, out.width='50%'}
+plot(weffs_2d_pdp)
 ```
 
 
@@ -451,3 +332,4 @@ if (SAVE_IMAGE)
 
 <div id="refs"></div>
 
+<img src="https://vg09.met.vgwort.de/na/20fa3b7a9cb04e0ab747a40747dd81c5" width="1" height="1" alt="" />
