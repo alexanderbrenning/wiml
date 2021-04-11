@@ -88,7 +88,7 @@ options(future.rng.onMisuse = "ignore")
 
 Land cover classification is a standard task in remote sensing, which often uses a large set of features ($20\le p\le200$) - for example, multitemporal spectral reflectances and derived vegetation indices and texture attributes, or even hyperspectral features. Many of these features are strongly correlated with each other, and they are often semantically grouped.
 
-We will look at a rather challenging case study on the detection of rock glaciers in the Chilean Andes from a combination of 40 texture features and 6 terrain attributes. This is how a rock glacier looks like - it resemles a lava stream more than a glacier:
+We will look at a rather challenging case study on the detection of rock glaciers in the Chilean Andes using the random forest classifier and a combination of 40 texture features and 6 terrain attributes. This is how a rock glacier looks like - it resembles a lava stream more than a glacier:
 
 ```{r, echo=FALSE, out.width='60%', fig.cap='A rock glacier in the Andes of Santiago, Chile. (c) A. Brenning, CC BY-SA 4.0.'}
 knitr::include_graphics("figures/rockglacier.jpg")
@@ -201,7 +201,7 @@ that was fitted to a training sample $L$ in the (original, untransformed) $p$-di
 $$
 \mathbf{T}: X \rightarrow W\subset\mathbb{R}^p,\quad \mathbf{w} = \mathbf{T}(\mathbf{x})
 $$
-that re-express the features in our dataset in a way that makes sense to us as domain scientists. PCA seems reasonable here, but other transformations can be considered (some thoughts on this in the paper).
+that re-expresses the features in our dataset in a way that makes sense to us as domain scientists. PCA seems reasonable here, but other transformations can be considered (some thoughts on this in the paper).
 
 The composition of the back transformation $\mathbf{T}^{-1}$ and the trained model function $\hat{f}$ now formally defines a model $\hat{g}$ on $W$,
 $$
