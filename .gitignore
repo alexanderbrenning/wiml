@@ -28,4 +28,4 @@ vignettes/*.pdf
 .Renviron
 inst/doc
 # vignettes cache
-/vignettes/cache/
+vignettes/cache/
