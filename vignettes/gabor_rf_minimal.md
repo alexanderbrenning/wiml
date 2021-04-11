@@ -1,60 +1,51 @@
----
-title: "The `wiml` Package: Transforming Feature Space to Interpret Machine Learning Models"
-subtitle: "A Remote-Sensing Case Study Using the Random Forest Classifier"
-author: Alexander Brenning
-date: "First published 12 Apr 2021, last edited 11 Apr 2021"
-output: 
-  github_document:
-    includes:
-      after_body: gabor_rf_after.md
-    md_extensions: +tex_math_dollars
-    pandoc_args: [
-      "--citeproc"
-    ]
-vignette: >
-  %\VignetteIndexEntry{"The wiml Package: Transforming Feature Space to Interpret Machine Learning Models"}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
-keywords:
-   - interpretable machine learning
-   - dataset-level post-hoc interpretation
-   - predictive modelling
-   - model visualization
-   - feature space transformation
-bibliography: wiml.bib
-csl: chicago-author-date.csl
----
-
-
-
-
-
-
-
+The `wiml` Package: Transforming Feature Space to Interpret Machine
+Learning Models
+================
+Alexander Brenning
+First published 12 Apr 2021, last edited 11 Apr 2021
 
 ## Preface
 
-This vignette walks you through the analyses performed for the paper that introduces the novel model interpretation approach implemented in the `wiml` package. Please refer to that paper for conceptual and formal details, and cite it when using `wiml` or referring to the methods and results presented herein.
+This vignette walks you through the analyses performed for the paper
+that introduces the novel model interpretation approach implemented in
+the `wiml` package. Please refer to that paper for conceptual and formal
+details, and cite it when using `wiml` or referring to the methods and
+results presented herein.
 
-> @brenning.et.al.2021.wiml  Transforming Feature Space to Interpret Machine Learning Models. arXiv:submit/3691062, submitted 9 Apr 2021.
+> Brenning (2021) Transforming Feature Space to Interpret Machine
+> Learning Models. arXiv:submit/3691062, submitted 9 Apr 2021.
 
-The `wiml` package serves as a thin wrapper around packages implementing ALE plots, partial dependence plots and other post-hoc model-agnostic interpretation tools. In this vignette, I will use `iml`; creating a vignette for use with `DALEX` is on my to-do list.
+The `wiml` package serves as a thin wrapper around packages implementing
+ALE plots, partial dependence plots and other post-hoc model-agnostic
+interpretation tools. In this vignette, I will use `iml`; creating a
+vignette for use with `DALEX` is on my to-do list.
 
-For an introduction to interpretable machine learning, see [@molnar.2019.iml.book], and for a broader overview, [@murdoch.et.al.2019.iml].  We are specifically dealing with the situation of post-hoc model-agnostic dataset-level tools for the interpretation of black-box machine-learning models. 
-Several of the following steps are computationally expensive and will be slow even on a workstation since the `iml` package, which does all the heavy lifting, does not seem to make full use of the parallel *workers* offered to it, at least not at the time of writing this document.
+For an introduction to interpretable machine learning, see (Molnar
+2019), and for a broader overview, (Murdoch et al. 2019). We are
+specifically dealing with the situation of post-hoc model-agnostic
+dataset-level tools for the interpretation of black-box machine-learning
+models. Several of the following steps are computationally expensive and
+will be slow even on a workstation since the `iml` package, which does
+all the heavy lifting, does not seem to make full use of the parallel
+*workers* offered to it, at least not at the time of writing this
+document.
 
 ## Getting started
 
 ### Work environment
 
-Make sure that all required packages and their dependencies are installed and up-to-date. `wiml` is currently only available via Github, so you will have to use `devtools` to install it; I also recommend using the most recent development version of `iml`.
+Make sure that all required packages and their dependencies are
+installed and up-to-date. `wiml` is currently only available via Github,
+so you will have to use `devtools` to install it; I also recommend using
+the most recent development version of `iml`.
 
+In addition, you will need the packages `stringr`, `purrr`,
+`ggcorrplot`, `ggfortify`. Packages for parallelization are optional:
+`future`, `future.callr`. To parallelize computations, you can
+(optionally) use the following call, specifying the number of workers
+appropriate for your computing environment:
 
-
-In addition, you will need the packages `stringr`, `purrr`, `ggcorrplot`, `ggfortify`. Packages for parallelization are optional: `future`, `future.callr`. To parallelize computations, you can (optionally) use the following call, specifying the number of workers appropriate for your computing environment:
-
-
-```r
+``` r
 library("future")
 library("future.callr")
 future::plan("callr", workers = 20)
@@ -63,21 +54,42 @@ options(future.rng.onMisuse = "ignore")
 # otherwise ALE plots will throw warnings...
 ```
 
-
 ### Case study and data preparation
 
-Land cover classification is a standard task in remote sensing, which often uses a large set of features ($20\le p\le200$) - for example, multitemporal spectral reflectances and derived vegetation indices and texture attributes, or even hyperspectral features. Many of these features are strongly correlated with each other, and they are often semantically grouped.
+Land cover classification is a standard task in remote sensing, which
+often uses a large set of features (20 ≤ *p* ≤ 200) - for example,
+multitemporal spectral reflectances and derived vegetation indices and
+texture attributes, or even hyperspectral features. Many of these
+features are strongly correlated with each other, and they are often
+semantically grouped.
 
-We will look at a rather challenging case study on the detection of rock glaciers in the Chilean Andes using the random forest classifier and a combination of 40 texture features and 6 terrain attributes. This is how a rock glacier looks like - it resembles a lava stream more than a glacier:
+We will look at a rather challenging case study on the detection of rock
+glaciers in the Chilean Andes using the random forest classifier and a
+combination of 40 texture features and 6 terrain attributes. This is how
+a rock glacier looks like - it resembles a lava stream more than a
+glacier:
 
-<img src="figures/rockglacier.jpg" title="A rock glacier in the Andes of Santiago, Chile. (c) A. Brenning, CC BY-SA 4.0." alt="A rock glacier in the Andes of Santiago, Chile. (c) A. Brenning, CC BY-SA 4.0." width="60%" style="display: block; margin: auto;" />
+<div class="figure" style="text-align: center">
 
-The texture features were generated by applying Gabor filters with varying bandwidth, anisotropy and aggregation settings to an IKONOS satellite image, resulting in strongly correlated features. This case study is described in more detail by [@brenning.et.al.2012.gabor]. We use a sample of 1000 points from this data set's Laguna Negra area (500 presence and 500 absence locations).
+<img src="figures/rockglacier.jpg" alt="A rock glacier in the Andes of Santiago, Chile. (c) A. Brenning, CC BY-SA 4.0." width="60%" />
+<p class="caption">
+A rock glacier in the Andes of Santiago, Chile. (c) A. Brenning, CC
+BY-SA 4.0.
+</p>
 
-Let's get started by preparing the data set, which is shipped with the `wiml` package:
+</div>
 
+The texture features were generated by applying Gabor filters with
+varying bandwidth, anisotropy and aggregation settings to an IKONOS
+satellite image, resulting in strongly correlated features. This case
+study is described in more detail by (Brenning, Long, and Fieguth 2012).
+We use a sample of 1000 points from this data set’s Laguna Negra area
+(500 presence and 500 absence locations).
 
-```r
+Let’s get started by preparing the data set, which is shipped with the
+`wiml` package:
+
+``` r
 data(gabor, package = "wiml")
 d <- gabor[gabor$area == "LN", ]
 colnames(d) <- gsub("m30", "", colnames(d))
@@ -105,26 +117,28 @@ d[, Xvars] <- d[, Xvars] %>%
 d[, gabor_vars] <- scale(d[, gabor_vars])
 ```
 
-
 ### Exploratory analysis
 
 (Impatient readers: please skip this section.)
 
-To show you how strongly the features are correlated, let's take a look at this correlation matrix; note that the terrain attribute are the six features at the top: 
+To show you how strongly the features are correlated, let’s take a look
+at this correlation matrix; note that the terrain attribute are the six
+features at the top:
 
-
-```r
+``` r
 ggcorrplot::ggcorrplot(cor(d[, Xvars]), type = "upper") +
   ggplot2::theme_grey(base_size = 8)
 ```
 
-<img src="figurescorrplot-1.png" title="plot of chunk corrplot" alt="plot of chunk corrplot" width="80%" style="display: block; margin: auto;" />
+<img src="figurescorrplot-1.png" width="80%" style="display: block; margin: auto;" />
 
+To wrap our head around the information contained in the texture
+features, we take a look at a principal components analysis (PCA) - the
+following plot shows the weights of the (standardized) texture features
+in the first four principal components, which explain about 85% of the
+variance:
 
-To wrap our head around the information contained in the texture features, we take a look at a principal components analysis (PCA) - the following plot shows the weights of the (standardized) texture features in the first four principal components, which explain about 85% of the variance:
-
-
-```r
+``` r
 library("ggfortify")
 ggplot2::autoplot(prcomp(d[, gabor_vars])$rotation[,1:4]) +
   scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
@@ -133,62 +147,144 @@ ggplot2::autoplot(prcomp(d[, gabor_vars])$rotation[,1:4]) +
   ggplot2::theme_grey(base_size = 9)
 ```
 
-<img src="figuresstrucpcaplot2-1.png" title="plot of chunk strucpcaplot2" alt="plot of chunk strucpcaplot2" width="50%" style="display: block; margin: auto;" />
-
+<img src="figuresstrucpcaplot2-1.png" width="50%" style="display: block; margin: auto;" />
 
 ## Post-hoc interpretation, the traditional way
 
-Before we apply the feature space transformation I propose in the paper, let's start with a traditional post-hoc interpretation at the level of the original features. We will train a random forest model on our 46 features, and create accumulated local effects (ALE) plots as our preferred way of visualizing the main effects of features in our black-box model [@molnar.2019.iml.book]:
+Before we apply the feature space transformation I propose in the paper,
+let’s start with a traditional post-hoc interpretation at the level of
+the original features. We will train a random forest model on our 46
+features, and create accumulated local effects (ALE) plots as our
+preferred way of visualizing the main effects of features in our
+black-box model (Molnar 2019):
 
-
-```r
+``` r
 fit <- randomForest::randomForest(formula = fo, data = d, importance = TRUE)
 ```
 
+Can you find a pattern? You’re probably totally lost because you don’t
+know what the texture feature names mean; but trust me, it doesn’t get
+much better if you know their meanings. How about showing this figure to
+a conference audience? Better don’t try…
 
-```r
+The same thing happens if we look at permutation-based variable
+importances, which are also problematic due to the strong correlations.
+We’ll take a quick look using `randomForest`’s built-in method:
+
+``` r
 randomForest::varImpPlot(fit, n.var = 20, type = 1)
 ```
 
-<img src="figuresvarimpplot-1.png" title="plot of chunk varimpplot" alt="plot of chunk varimpplot" width="60%" style="display: block; margin: auto;" />
+<img src="figuresvarimpplot-1.png" width="60%" style="display: block; margin: auto;" />
 
 ## Model interpretation in transformed feature space
 
-Now you may remember that many of the texture features are strongly correlated, and according to our domain knowledge, they are semantically related to each other as the features correspond to isotropic or anisotropic Gabor filters, wavelengths from 5 to 50 m, and four different aggregation schemes. We'd really like to think about decomposing their variance into... principal components!
+Now you may remember that many of the texture features are strongly
+correlated, and according to our domain knowledge, they are semantically
+related to each other as the features correspond to isotropic or
+anisotropic Gabor filters, wavelengths from 5 to 50 m, and four
+different aggregation schemes. We’d really like to think about
+decomposing their variance into… principal components!
 
-The relationships between the texture features are in fact reasonably close to linear, and principal component analysis (PCA) is therefore an obvious choice for feature engineering. We may be tempted to retrain our model using the principal components (PCs) instead of the original features. Nevertheless, there are two reasons why I'm going down that road:
+The relationships between the texture features are in fact reasonably
+close to linear, and principal component analysis (PCA) is therefore an
+obvious choice for feature engineering. We may be tempted to retrain our
+model using the principal components (PCs) instead of the original
+features. Nevertheless, there are two reasons why I’m going down that
+road:
 
-1. Feature engineering, and PCA in particular, does not always improve model performance; it may in fact be harmful. (Spoiler: It's not harmful in this case study.)
-2. More importantly, in post-hoc analyses, we are not normally able or allowed to retrain the model. The whole point of post-hoc methods is that they can be applied to trained models.
+1.  Feature engineering, and PCA in particular, does not always improve
+    model performance; it may in fact be harmful. (Spoiler: It’s not
+    harmful in this case study.)
+2.  More importantly, in post-hoc analyses, we are not normally able or
+    allowed to retrain the model. The whole point of post-hoc methods is
+    that they can be applied to trained models.
 
-But how can we examine our model's behaviour from a PCA perspective without retraining the model?
+But how can we examine our model’s behaviour from a PCA perspective
+without retraining the model?
 
-Here's the trick: We'll use an invertible transformation function as a pair of glasses that'll allow us to inspect the model's behaviour. The transformation function we'll be using is a principal component transformation.
+Here’s the trick: We’ll use an invertible transformation function as a
+pair of glasses that’ll allow us to inspect the model’s behaviour. The
+transformation function we’ll be using is a principal component
+transformation.
 
-I'll briefly outline the mathematical formalism, in case you're interested. We're dealing with a model 
-$$\hat{f}:\mathbf{x}\in\mathbb{R}^p\mapsto\hat{f}(\mathbf{x})\in\mathbb{R}$$ 
-that was fitted to a training sample $L$ in the (original, untransformed) $p$-dimensional feature space $X\subset\mathbb{R}^p$, where the predicted values are probabilities or logits, in the case of classifiers. We'll use an invertible transformation function
-$$
-\mathbf{T}: X \rightarrow W\subset\mathbb{R}^p,\quad \mathbf{w} = \mathbf{T}(\mathbf{x})
-$$
-that re-expresses the features in our dataset in a way that makes sense to us as domain scientists. PCA seems reasonable here, but other transformations can be considered (some thoughts on this in the paper).
+I’ll briefly outline the mathematical formalism, in case you’re
+interested. We’re dealing with a model
+*f̂* : **x** ∈ ℝ<sup>*p*</sup> ↦ *f̂*(**x**) ∈ ℝ
+that was fitted to a training sample *L* in the (original,
+untransformed) *p*-dimensional feature space *X* ⊂ ℝ<sup>*p*</sup>,
+where the predicted values are probabilities or logits, in the case of
+classifiers. We’ll use an invertible transformation function
+**T** : *X* → *W* ⊂ ℝ<sup>*p*</sup>,  **w** = **T**(**x**)
+that re-expresses the features in our dataset in a way that makes sense
+to us as domain scientists. PCA seems reasonable here, but other
+transformations can be considered (some thoughts on this in the paper).
 
-The composition of the back transformation $\mathbf{T}^{-1}$ and the trained model function $\hat{f}$ now formally defines a model $\hat{g}$ on $W$,
-$$
-\hat{g} := \hat{f}\circ\mathbf{T}^{-1}
-$$
-which predicts the real-valued response based on 'data' in $W$ although it was trained using a learning sample $L\subset X$ in the untransformed feature space. So $\mathbf{T}^{-1}$ is the 'thin layer' I was talking about - a set of glasses, or maybe in this case we should call it a 'macroscope' as we're aggregating information into principal components. The function $\hat{g}$ behaves exactly like a model trained on $\mathbf{T}(L)$, both mathematically and computationally, and therefore we can fool any interpretation tool or R package by applying them to $\hat{g}$ instead of $\hat{f}$.
+The composition of the back transformation **T**<sup> − 1</sup> and the
+trained model function *f̂* now formally defines a model *ĝ* on *W*,
+*ĝ* := *f̂* ∘ **T**<sup> − 1</sup>
+which predicts the real-valued response based on ‘data’ in *W* although
+it was trained using a learning sample *L* ⊂ *X* in the untransformed
+feature space. So **T**<sup> − 1</sup> is the ‘thin layer’ I was talking
+about - a set of glasses, or maybe in this case we should call it a
+‘macroscope’ as we’re aggregating information into principal components.
+The function *ĝ* behaves exactly like a model trained on **T**(*L*),
+both mathematically and computationally, and therefore we can fool any
+interpretation tool or R package by applying them to *ĝ* instead of *f̂*.
 
-Note that the PCs are linearly independent, and therefore we also overcome the issue we had with permutation variable importances calculated from strongly correlated features.
+Note that the PCs are linearly independent, and therefore we also
+overcome the issue we had with permutation variable importances
+calculated from strongly correlated features.
 
-Before we continue, there's still one pitfall to avoid: If we apply PCA to all features, we will 'mix' information from the texture and terrain features, although they are weakly correlated and semantically completely different. We will therefore use a transformation that does PCA on the texture features, and nothing (i.e. an identity transformation) on the terrain attributes. (This is achieved by creating a rotation matrix that is composed of two block matrices.)
+Before we continue, there’s still one pitfall to avoid: If we apply PCA
+to all features, we will ‘mix’ information from the texture and terrain
+features, although they are weakly correlated and semantically
+completely different. We will therefore use a transformation that does
+PCA on the texture features, and nothing (i.e. an identity
+transformation) on the terrain attributes. (This is achieved by creating
+a rotation matrix that is composed of two block matrices.)
 
-By the way, `wiml` also allows us to perform (truely) structured PCAs, i.e. seperate PCAs on subsets of features. This would be useful here if the terrain attributes were strongly correlated, which is not the case.
-
-
-
-
+By the way, `wiml` also allows us to perform (truely) structured PCAs,
+i.e. seperate PCAs on subsets of features. This would be useful here if
+the terrain attributes were strongly correlated, which is not the case.
 
 ### References
 
-<div id="refs"></div>
+<div id="refs" class="references csl-bib-body hanging-indent">
+
+<div id="ref-brenning.et.al.2021.wiml" class="csl-entry">
+
+Brenning, A. 2021. “Wiml: Transforming Feature Space to Interpret
+Machine Learning Models.” *arXiv Preprint*, arXiv:submit/3691062,
+submitted 9 Apr 2021.
+
+</div>
+
+<div id="ref-brenning.et.al.2012.gabor" class="csl-entry">
+
+Brenning, A., S. Long, and P. Fieguth. 2012. “Detecting Rock Glacier
+Flow Structures Using Gabor Filters and IKONOS Imagery.” *Remote Sensing
+of Environment* 125: 227–37.
+<https://doi.org/10.1016/j.rse.2012.07.005>.
+
+</div>
+
+<div id="ref-molnar.2019.iml.book" class="csl-entry">
+
+Molnar, C. 2019. *Interpretable Machine Learning: A Guide for Making
+Black Box Models Explainable*.
+
+</div>
+
+<div id="ref-murdoch.et.al.2019.iml" class="csl-entry">
+
+Murdoch, W. J., C. Singh, K. Kumbier, R. Abbasi-Asl, and B. Yu. 2019.
+“Definitions, Methods, and Applications in Interpretable Machine
+Learning.” *Proceedings of the National Academy of Sciences* 116 (44):
+22071–80. <https://doi.org/10.1073/pnas.1900654116>.
+
+</div>
+
+</div>
+
+<img src="https://vg09.met.vgwort.de/na/20fa3b7a9cb04e0ab747a40747dd81c5" width="1" height="1" alt="" />

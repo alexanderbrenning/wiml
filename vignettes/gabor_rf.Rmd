@@ -3,14 +3,9 @@ title: "The `wiml` Package: Transforming Feature Space to Interpret Machine Lear
 subtitle: "A Remote-Sensing Case Study Using the Random Forest Classifier"
 author: Alexander Brenning
 date: "First published 12 Apr 2021, last edited `r format(Sys.time(), '%d %b %Y')`"
-output: 
-  github_document:
-    includes:
-      after_body: gabor_rf_after.md
-    md_extensions: +tex_math_dollars
-    pandoc_args: [
-      "--citeproc", "??"
-    ]
+output:
+  github_document: default
+  rmarkdown::html_vignette: default
 vignette: >
   %\VignetteIndexEntry{"The wiml Package: Transforming Feature Space to Interpret Machine Learning Models"}
   %\VignetteEngine{knitr::rmarkdown}
@@ -36,14 +31,11 @@ knitr::opts_chunk$set(
 )
 options(rmarkdown.html_vignette.check_title = FALSE)
 # setwd("vignettes")
-# knitr::knit("gabor_rf.Rmd")
+# rmarkdown::render("gabor_rf.Rmd")
 #   rmarkdown::html_vignette: default
 
 ```
 
-```{r, include=FALSE}
-knitr::write_bib("knitr", file = "wiml.bib")
-```
 
 
 ```{r setup, include=FALSE}
@@ -83,17 +75,17 @@ library("ggplot2")
 ggplot2::theme_set(theme_grey(base_size = 9))
 ```
 
-In addition, you will need the packages `stringr`, `purrr`, `ggcorrplot`, `ggfortify`. Packages for parallelization are optional: `future`, `future.callr`. To parallelize computations, you can (optionally) use the following call, specifying the number of workers appropriate for your computing environment:
+In addition, you will need the packages `stringr`, `purrr`, `ggcorrplot`, `ggfortify`. <!--- Packages for parallelization are optional: `future`, `future.callr`. To parallelize computations, you can (optionally) use the following call, specifying the number of workers appropriate for your computing environment:
 
 ```{r parallelization}
-library("future")
-library("future.callr")
-future::plan("callr", workers = 20)
-set.seed(444)
-options(future.rng.onMisuse = "ignore")
-# otherwise ALE plots will throw warnings...
+#library("future")
+#library("future.callr")
+#future::plan("callr", workers = 4)
+#set.seed(444)
+#options(future.rng.onMisuse = "ignore")
 ```
 
+-->
 
 ### Case study and data preparation
 
@@ -342,3 +334,7 @@ plot(weffs_2d_pdp)
 ### References
 
 <div id="refs"></div>
+
+
+<img src="https://vg09.met.vgwort.de/na/20fa3b7a9cb04e0ab747a40747dd81c5" width="1" height="1" alt="" />
+

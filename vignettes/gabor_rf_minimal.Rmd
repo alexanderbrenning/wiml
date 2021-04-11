@@ -3,18 +3,9 @@ title: "The `wiml` Package: Transforming Feature Space to Interpret Machine Lear
 subtitle: "A Remote-Sensing Case Study Using the Random Forest Classifier"
 author: Alexander Brenning
 date: "First published 12 Apr 2021, last edited `r format(Sys.time(), '%d %b %Y')`"
-output: 
-  github_document:
-    includes:
-      after_body: gabor_rf_after.md
-    md_extensions: +tex_math_dollars
-    pandoc_args: [
-      "--citeproc"
-    ]
-vignette: >
-  %\VignetteIndexEntry{"The wiml Package: Transforming Feature Space to Interpret Machine Learning Models"}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+output:
+  github_document: default
+  rmarkdown::html_vignette: default
 keywords:
    - interpretable machine learning
    - dataset-level post-hoc interpretation
@@ -41,13 +32,10 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 
 ```
 
-```{r, include=FALSE}
-knitr::write_bib("knitr", file = "wiml.bib")
-```
 
 
 ```{r setup, include=FALSE}
-CACHE <- FALSE
+CACHE <- TRUE
 do_cache <- function() {
   if (!CACHE) 
     CACHE <- sample(1:1000, size = 1)
@@ -170,6 +158,11 @@ Before we apply the feature space transformation I propose in the paper, let's s
 fit <- randomForest::randomForest(formula = fo, data = d, importance = TRUE)
 ```
 
+
+Can you find a pattern? You're probably totally lost because you don't know what the texture feature names mean; but trust me, it doesn't get much better if you know their meanings. How about showing this figure to a conference audience? Better don't try...
+
+The same thing happens if we look at permutation-based variable importances, which are also problematic due to the strong correlations. We'll take a quick look using `randomForest`'s built-in method:
+
 ```{r varimpplot, out.width='60%'}
 randomForest::varImpPlot(fit, n.var = 20, type = 1)
 ```
@@ -209,8 +202,10 @@ By the way, `wiml` also allows us to perform (truely) structured PCAs, i.e. sepe
 
 
 
-
-
 ### References
 
 <div id="refs"></div>
+
+
+<img src="https://vg09.met.vgwort.de/na/20fa3b7a9cb04e0ab747a40747dd81c5" width="1" height="1" alt="" />
+
