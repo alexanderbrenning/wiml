@@ -60,7 +60,7 @@ pca_warper <- function(xdata, xvars, wvars = "PC", yvar, uvars = NULL,
   }
 
   # Perform PCA on x variables:
-  fo <- as.formula(paste0("~", paste(xvars, collapse = " + ")))
+  fo <- stats::as.formula(paste0("~", paste(xvars, collapse = " + ")))
   pca <- stats::prcomp(formula = fo, data = xdata[, xvars],
                        center = FALSE, scale. = FALSE)
 
@@ -89,7 +89,7 @@ pca_warper <- function(xdata, xvars, wvars = "PC", yvar, uvars = NULL,
   full_rotation <- lava::blockdiag(pca$rotation, uid)
 
   # Overall model formula (I think this can be removed):
-  xfo <- as.formula(paste0(yvar, "~", paste(xvars, collapse = " + ")))
+  xfo <- stats::as.formula(paste0(yvar, "~", paste(xvars, collapse = " + ")))
 
   # Set up warper object:
   x <- list(
@@ -116,7 +116,7 @@ pca_warper <- function(xdata, xvars, wvars = "PC", yvar, uvars = NULL,
 #'
 #' This method plots standard PCA summary diagrams for a `pca_warper`, i.e. a principal component transformation of feature space.
 #'
-#' @param object A \code{\link{pca_warper}} object.
+#' @param x A \code{\link{pca_warper}} object.
 #' @param which Which plots to plot: screeplot (`1`), biplot (`2`).
 #' @param col,bp.col Colours of \code{biplot} labels and \code{barplot} bars.
 #' @param ... Currently not used.
@@ -134,7 +134,7 @@ plot.pca_warper <- function(x,
   if (any(which == 1))
     plot(x$pca, col = bp.col, xlab = "PC #", main = "PC Variances")
   if (any(which == 2))
-    biplot(x$pca, col = col, main = "Screeplot")
+    stats::biplot(x$pca, col = col, main = "Screeplot")
   invisible(NULL)
 }
 

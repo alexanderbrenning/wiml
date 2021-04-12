@@ -59,7 +59,7 @@ predict.warped_model <- function(object, newdata = NULL,
   # the existence of transformed and untransformed feature space representations.
   newdata <- unwarp(newdata, warper = object$warper,
                     force = force_unwarp)
-  predict(object$fit, newdata = newdata, ...)
+  stats::predict(object$fit, newdata = newdata, ...)
 }
 
 

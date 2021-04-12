@@ -14,3 +14,6 @@ dealing with this problem. This approach can be especially beneficial in
 situations where features tend to be linearly dependent, or in other words,
 where principal component analysis seems like a reasonable approach.
 }
+\references{
+Brenning, A. (2021). Transforming Feature Space to Interpret Machine Learning Models. arXiv preprint, arXiv:2104.04295, \url{https://arxiv.org/abs/2104.04295}.
+}

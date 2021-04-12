@@ -15,6 +15,7 @@
 #' @details The arguments
 #'     `pvars`, `xvars`, `uvars` and `yvar` should not overlap.
 #' @example examples/pls_warper.R
+#' @importFrom magrittr %>%
 #' @export
 pls_warper <- function(xdata, xvars, pvars, wvars = "resid", yvar, uvars = NULL,
                        title = wvars) {
@@ -66,11 +67,12 @@ pls_warper <- function(xdata, xvars, pvars, wvars = "resid", yvar, uvars = NULL,
   rownames(uid) <- colnames(uid) <- uvars
 
   cf_fun <- function(x) {
-    fo <- as.formula(paste(x, "~", pvars))
+    fo <- stats::as.formula(paste(x, "~", pvars))
     cf <- stats::coef(stats::lm(fo, data = xdata))
     names(cf) <- c("alpha", "beta")
     cf
   }
+
   coefs <- xvars %>% purrr::map_dfr(cf_fun) %>% as.matrix()
 
   center <- t(coefs[, 1])

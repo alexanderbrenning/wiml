@@ -7,13 +7,13 @@
 \method{plot}{pca_warper}(x, which = c(1:2), col = c("white", "black"), bp.col = "lightblue", ...)
 }
 \arguments{
+\item{x}{A \code{\link{pca_warper}} object.}
+
 \item{which}{Which plots to plot: screeplot (\code{1}), biplot (\code{2}).}
 
 \item{col, bp.col}{Colours of \code{biplot} labels and \code{barplot} bars.}
 
 \item{...}{Currently not used.}
-
-\item{object}{A \code{\link{pca_warper}} object.}
 }
 \value{
 Returns \code{NULL}

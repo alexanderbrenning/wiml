@@ -34,7 +34,7 @@ mean(wdtest$class != wpred)
 
 # Use this warped model to visualize main effects in a tidy way:
 library(iml)
-predictor <- Predictor$new(warped_fit, data = wd, y = "class",
+predictor <- Predictor$new(warped_fit, data = wdtest, y = "class",
                            type = "prob", class = "crop3")
 effs <- FeatureEffects$new(predictor, features = c("PC1","PC2","PC3","PC4"),
                            method = "ale")
