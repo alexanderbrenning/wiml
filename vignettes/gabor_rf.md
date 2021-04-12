@@ -177,13 +177,6 @@ Well that took some time… here’s finally our figure:
 
 ``` r
 plot(simple_effs, ncols = 8)
-#> Warning: UNRELIABLE VALUE: Future ('future_lapply-1') unexpectedly
-#> generated random numbers without specifying argument 'future.seed'. There
-#> is a risk that those random numbers are not statistically sound and the
-#> overall results might be invalid. To fix this, specify 'future.seed=TRUE'.
-#> This ensures that proper, parallel-safe random numbers are produced via
-#> the L'Ecuyer-CMRG method. To disable this check, use 'future.seed=NULL',
-#> or set option 'future.rng.onMisuse' to "ignore".
 ```
 
 <img src="figuresplotale-1.png" width="100%" style="display: block; margin: auto;" />
