@@ -38,7 +38,7 @@ using the transformed data.
 xvars <- c(paste("ndvi0", 1:8, sep = ""), paste("ndwi0", 1:8, sep = ""),
            paste("b", outer(1:8,2:7,paste,sep = ""), sep = ""))
 fo <- as.formula(paste("class ~", paste(xvars, collapse=" +" )))
-d <- maipo
+d <- maipofields
 
 sel <- seq(1, nrow(d), by = 2)
 #sel <- sample(1:nrow(d), size = floor(nrow(d)/2))

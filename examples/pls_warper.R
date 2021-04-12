@@ -4,7 +4,7 @@
 xvars <- c(paste("ndvi0", 1:8, sep = ""),
            paste("ndwi0", 1:8, sep = ""))
 fo <- as.formula(paste("class ~", paste(xvars, collapse=" +" )))
-d <- maipo
+d <- maipofields
 fit <- randomForest::randomForest(fo, data = d)
 
 # Late-season NDVI and NDWI features:

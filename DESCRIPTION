@@ -1,6 +1,6 @@
 Package: wiml
 Title: Interpreting machine-learning models in transformed space
-Version: 0.0.0.9003
+Version: 0.0.0.9004
 Authors@R: 
     person(given = "Alexander",
            family = "Brenning",
@@ -14,14 +14,13 @@ Description: Main effects plots (such as partial dependence and ALE plots) can
     from such imagery. This package introduces a simple and pragmatic approach to 
     dealing with this problem. This approach can be especially beneficial in 
     situations where features tend to be linearly dependent, or in other words, 
-    where principal components analysis seems like a reasonable approach.
-License: GPL (>= 3)
+    where principal component analysis seems like a reasonable approach. Please 
+    refer to the paper on arXiv for details.
+License: GPL (>= 3) + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1.9001
-Enhances:
-    iml
 URL: https://github.com/alexanderbrenning/wiml
 BugReports: https://github.com/alexanderbrenning/wiml/issues
 Imports:
@@ -30,5 +29,6 @@ Depends:
     R (>= 2.10)
 Suggests: 
     rmarkdown,
-    knitr
+    knitr,
+    iml
 VignetteBuilder: knitr

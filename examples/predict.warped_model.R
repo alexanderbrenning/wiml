@@ -4,9 +4,9 @@ xvars <- c(paste("ndvi0", 1:8, sep = ""),
            paste("ndwi0", 1:8, sep = ""))
 fo <- as.formula(paste("class ~", paste(xvars, collapse=" +" )))
 
-sel <- seq(1, nrow(maipo), by = 2)
-dtrain <- maipo[sel, ]
-dtest <- maipo[-sel, ]
+sel <- seq(1, nrow(maipofields), by = 2)
+dtrain <- maipofields[sel, ]
+dtest <- maipofields[-sel, ]
 
 wrp <- pca_warper(dtrain, xvars = xvars, yvar = "class")
 

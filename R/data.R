@@ -5,7 +5,9 @@
 #' basin in central Chile. And Landsat data is available for nine image dates
 #' from one growing season. This is a subset of the data used by Pena et al.
 #' (2015), who provide more detailed information on the data set (e.g., image
-#' dates).
+#' dates). Note that this is different from the [sperrorest::maipo] data set shipped with
+#' the `sperrorest` package, which contains pixel-level data; this data set
+#' contains field-level data, i.e. one (averaged) observation per field (n=400).
 #'
 #' @details **Objective:** To predict crop type as the response variable based
 #'   on the available optical remote sensing data.
@@ -27,7 +29,7 @@
 #'   classification from Landsat-8 time series for the Maipo Valley, Chile.
 #'   *Remote Sensing of Environment*, 171: 234-44.
 #'   <https://doi.org/10.1016/j.rse.2015.10.029>
-"maipo"
+"maipofields"
 
 
 #' Rock glacier remote sensing using Gabor texture filters
