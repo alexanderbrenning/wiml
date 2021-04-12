@@ -1,14 +1,14 @@
 citHeader("To cite wiml in publications use:")
 
 citEntry(entry = "Article",
-  title        = "wiml: Transforming Feature Space to Interpret Machine Learning Models",
+  title        = "Transforming Feature Space to Interpret Machine Learning Models",
   author       = personList(as.person("Alexander Brenning")),
-  journal      = "arXiv preprint",
   year         = "2021",
-  pages        = "arXiv:submit/3691062, submitted 9 Apr 2021",
+  journal      = "arXiv preprint",
+  pages        = "arXiv:2104.04295",
 
   textVersion  =
   paste("Brenning, A. (2021).",
-        "wiml: Transforming Feature Space to Interpret Machine Learning Models.",
-        "arXiv:submit/3691062, submitted 9 Apr 2021.")
+        "Transforming Feature Space to Interpret Machine Learning Models.",
+        "arXiv preprint, arXiv:2104.04295")
 )
