@@ -8,8 +8,8 @@ Brenning, A. (2021). Transforming Feature Space to Interpret Machine Learning Mo
 
 ### My Personal Wishlist
 
-1. Write a package vignette.
+1. Write a package vignette. - DONE (12 Apr 2021)
 
-2. Look into [DALEX](https://github.com/ModelOriented/DALEX) and `modelStudio` connectivity in more detail. Changes to DALEX may be necessary to support `warped_model` objects and recognize "the model inside".
+2. Look into [DALEX](https://github.com/ModelOriented/DALEX) and `modelStudio` connectivity in more detail. Changes to DALEX may be necessary to support `warped_model` objects and recognize "the model inside". First attempts were successful and look promising.
 
 3. Create a more general framework for structuring feature space than through `strucpca_wrapper`. E.g. `c()` multiple wrappers to create a structured wrapper. Does `c()` have methods? Then write a `c()` method that creates a `structured_wrapper` object, doing some validity checks.
