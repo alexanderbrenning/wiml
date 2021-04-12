@@ -2,7 +2,7 @@
 title: "The `wiml` Package: Transforming Feature Space to Interpret Machine Learning Models"
 subtitle: "A Remote-Sensing Case Study Using the Random Forest Classifier"
 author: Alexander Brenning
-date: "First published 12 Apr 2021, last edited `r format(Sys.time(), '%d %b %Y')`"
+date: "First published 12 Apr 2021, last edited 12 Apr 2021"
 output:
   github_document: default
   rmarkdown::html_vignette: default
@@ -48,7 +48,7 @@ do_cache <- function() {
 
 ## Preface
 
-This vignette walks you through the analyses performed for the paper that introduces the novel model interpretation approach implemented in the `wiml` package. Please refer to that paper for conceptual and formal details, and cite it when using `wiml` or referring to the methods and results presented herein.
+This vignette walks you through most of the analyses performed for the paper that introduces the novel model interpretation approach implemented in the `wiml` package. Please refer to that paper for conceptual and formal details, and cite it when using `wiml` or referring to the methods and results presented herein.
 
 > @brenning.2021.wiml  Transforming Feature Space to Interpret Machine Learning Models. arXiv preprint, arXiv:2104.04295, <https://arxiv.org/abs/2104.04295>
 
