@@ -26,6 +26,11 @@ be omitted in the future, unless it turns out to be instrumental
 in drop/permute and re-learn techniques that require a trainable
 model, not a fitted one.
 }
+\details{
+Models fitted using the resulting object currently don't seem to work properly
+inside function calls that are parallelized with \code{future}; at least that's
+what happens with \code{sperrorest}.
+}
 \seealso{
 \code{\link[=warp_fitted_model]{warp_fitted_model()}}
 }

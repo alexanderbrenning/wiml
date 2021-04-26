@@ -1,6 +1,6 @@
 Package: wiml
 Title: Interpreting machine-learning models in transformed space
-Version: 0.0.0.9004
+Version: 0.0.0.9005
 Authors@R: 
     person(given = "Alexander",
            family = "Brenning",

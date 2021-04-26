@@ -112,18 +112,88 @@ unwarp.data.frame <- function(x, warper = NULL, force_unwarp = FALSE, ...) {
 #'   this function first (back)transformed its input data from the transformed space
 #'   to the original feature space, and then fits a model using these features.
 #' @seealso [warp_fitted_model()]
+#'
+#' @details Models fitted using the resulting object currently don't seem to work properly
+#'   inside function calls that are parallelized with `future`; at least that's
+#'   what happens with `sperrorest`.
+#'
 #' @export
-warp.function <- function(x, warper, ...) {
+warp.function <- function (x, warper, ...)
+{
   function(formula, data, ...) {
     data <- unwarp(data, warper = warper)
-    fit <- x(formula, data = data, ...)
-    res <- list(
-      fit = fit,
-      warper = warper
-    )
-    chkDots(...)
+    uwformula <- unwarp(formula, warper = warper)
+    fit <- x(uwformula, data = data, ...)
+    res <- list(fit = fit, warper = warper,
+                unwarped_formula = uwformula,
+                formula = formula)
     class(res) <- "warped_model"
     res
   }
 }
 
+
+#' Formula method for warped models
+#'
+#' @param x Warped model, of class `warped_model`.
+#' @param warped Return the formula involving the warped predictors
+#'   or the original untransformed predictor names. Defaults to `TRUE`,
+#'   i.e. warped names, since the warped model wants to be talked to
+#'   in the language of warped predictors.
+#' @param ... Not used, ignored with a warning.
+#'
+#' @return Formula
+#' @export
+formula.warped_model <- function(x, warped = TRUE, ...) {
+  chkDots(...)
+  ifelse(warped, x$formula, x$unwarped_formula)
+}
+
+
+#' Warp model formula
+#'
+#' @param x Formula object.
+#' @param warper Warper object.
+#' @param ...
+#'
+#' @return The warped formula (e.g., based on principal components), or the
+#'   unwarped formula (using the original, untransformed variable names).
+#' @export
+#'
+#' @details Currently only "simple" formulas of the form `y ~ x1 + x2 + x3` etc.
+#'   are allowed - no `*`, `:`, `s()`, `I()`, `^2` or other operations that
+#'   are supported by some modeling functions.
+warp.formula <- function(x, warper, ...) {
+  xvars <- unlist(flatten(warper$xvars))
+  # check if all predictor variables are included in the Xvars / uvars set:
+  if (!all(xvars %in% all.vars(x)[-1]))
+    stop("Warper inconsistent with formula: not all Xvars are included in formula.")
+  if (!all(all.vars(x)[-1] %in% c(xvars, warper$uvars)))
+    stop("Warper inconsistent with formula: not all predictor variables are included in Xvars or uvars.")
+  # Only use uvars that are also in the formula since warper might contain
+  # additional metadata variables such as x/y coordinates:
+  sel_uvars <- warper$uvars[ warper$uvars %in% all.vars(x)[-1] ]
+  wvars <- warper$Wvars[ !(warper$Wvars %in% warper$uvars) ]
+
+  as.formula(paste(all.vars(x)[1], "~",
+                   paste(c(wvars, sel_uvars), collapse = "+")))
+}
+
+
+#' @describeIn warp.formula Unwarp a model formula.
+#' @export
+unwarp.formula <- function(x, warper, ...) {
+  wvars <- warper$Wvars[ !(warper$Wvars %in% warper$uvars) ]
+  # check if all predictor variables are included in the Wvars / uvars set:
+  if (!all(wvars %in% all.vars(x)[-1]))
+    stop("Warper inconsistent with formula: not all Xvars are included in formula.")
+  if (!all(all.vars(x)[-1] %in% c(wvars, warper$uvars)))
+    stop("Warper inconsistent with formula: not all predictor variables are included in Xvars or uvars.")
+  # Only use uvars that are also in the formula since warper might contain
+  # additional metadata variables such as x/y coordinates:
+  sel_uvars <- warper$uvars[ warper$uvars %in% all.vars(x)[-1] ]
+  xvars <- unlist(flatten(warper$xvars))
+
+  as.formula(paste(all.vars(x)[1], "~",
+                   paste(c(xvars, sel_uvars), collapse = "+")))
+}
