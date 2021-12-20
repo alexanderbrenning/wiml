@@ -34,7 +34,7 @@ model predictions for the training data.
 }
 \examples{
 ### Create principal components warper for Maipo data set
-### from PeÃ±a et al. (2015):
+### from Peña et al. (2015):
 xvars <- c(paste("ndvi0", 1:8, sep = ""),
            paste("ndwi0", 1:8, sep = ""))
 fo <- as.formula(paste("class ~", paste(xvars, collapse=" +" )))
