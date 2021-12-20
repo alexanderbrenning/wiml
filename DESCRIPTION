@@ -20,20 +20,20 @@ License: GPL (>= 3) + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1.9001
+RoxygenNote: 7.1.2
 URL: https://github.com/alexanderbrenning/wiml
 BugReports: https://github.com/alexanderbrenning/wiml/issues
 Imports:
     purrr,
     dplyr,
     magrittr,
-    lava
+    lava,
+    iml (>= 0.10.1)
 Depends: 
     R (>= 2.10)
 Suggests: 
     rmarkdown,
     knitr,
-    iml,
     DescTools,
     stringr,
     ggplot2,
@@ -44,3 +44,5 @@ Suggests:
 VignetteBuilder: 
     knitr,
     rmarkdown
+Remotes:  
+    christophM/iml
