@@ -248,7 +248,7 @@ This is an object of class `warper`, which in this case is built around a `prcom
 
 So now we've got our transformation function $\mathbf{T}$, which can be applied to a dataset by using the `warp` method, and whose inverse is given by the inverse of its rotation matrix and implemented in the `unwarp` method.
 
-<!-- We now have to wrap our transformation around the trained model, i.e. create the composition $\hat{f}\circ\mathbf{T}^{-1}$: -->
+We now have to wrap our transformation around the trained model, i.e. create the composition $\hat{f}\circ\mathbf{T}^{-1}$:
 
 ```{r strucpcawarpfit}
 wfit <- warp_fitted_model(fit, warper = wrp)
