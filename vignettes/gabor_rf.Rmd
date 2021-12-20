@@ -162,7 +162,7 @@ ggplot2::autoplot(prcomp(d[, gabor_vars])$rotation[, 1:4]) +
 ## Post-hoc interpretation, the traditional way
 
 Before we apply the feature space transformation I propose in the paper, let's start with a traditional post-hoc interpretation at the level of the original features. We will train a random forest model on our 46 features, and create accumulated local effects (ALE) plots as our preferred way of visualizing the main effects of features in our black-box model [@molnar.2019.iml.book]:
-  
+
 ```{r trainrf, cache = TRUE, cache.extra = do_cache()}
 fit <- randomForest::randomForest(formula = fo, data = d, importance = TRUE)
 ```
@@ -197,7 +197,7 @@ randomForest::varImpPlot(fit, n.var = 20, type = 1)
 ## Model interpretation in transformed feature space
 
 Now you may remember that many of the texture features are strongly correlated, and according to our domain knowledge, they are semantically related to each other as the features correspond to isotropic or anisotropic Gabor filters, wavelengths from 5 to 50 m, and four different aggregation schemes. We'd really like to think about decomposing their variance into... principal components!
-  
+
 The relationships between the texture features are in fact reasonably close to linear, and principal component analysis (PCA) is therefore an obvious choice for feature engineering. We may be tempted to retrain our model using the principal components (PCs) instead of the original features. Nevertheless, there are two reasons why I'm going down that road:
 
 1. Feature engineering, and PCA in particular, does not always improve model performance; it may in fact be harmful. (Spoiler: It's not harmful in this case study.)
@@ -211,13 +211,13 @@ I'll briefly outline the mathematical formalism, in case you're interested. We'r
 $$\hat{f}:\mathbf{x}\in\mathbb{R}^p\mapsto\hat{f}(\mathbf{x})\in\mathbb{R}$$ 
 that was fitted to a training sample $L$ in the (original, untransformed) $p$-dimensional feature space $X\subset\mathbb{R}^p$, where the predicted values are probabilities or logits, in the case of classifiers. We'll use an invertible transformation function
 $$
-  \mathbf{T}: X \rightarrow W\subset\mathbb{R}^p,\quad \mathbf{w} = \mathbf{T}(\mathbf{x})
+\mathbf{T}: X \rightarrow W\subset\mathbb{R}^p,\quad \mathbf{w} = \mathbf{T}(\mathbf{x})
 $$
 that re-expresses the features in our dataset in a way that makes sense to us as domain scientists. PCA seems reasonable here, but other transformations can be considered (some thoughts on this in the paper).
 
 The composition of the back transformation $\mathbf{T}^{-1}$ and the trained model function $\hat{f}$ now formally defines a model $\hat{g}$ on $W$,
 $$
-  \hat{g} := \hat{f}\circ\mathbf{T}^{-1}
+\hat{g} := \hat{f}\circ\mathbf{T}^{-1}
 $$
 which predicts the real-valued response based on 'data' in $W$ although it was trained using a learning sample $L\subset X$ in the untransformed feature space. So $\mathbf{T}^{-1}$ is the 'thin layer' I was talking about - a set of glasses, or maybe in this case we should call it a 'macroscope' as we're aggregating information into principal components. The function $\hat{g}$ behaves exactly like a model trained on $\mathbf{T}(L)$, both mathematically and computationally, and therefore we can fool any interpretation tool or R package by applying them to $\hat{g}$ instead of $\hat{f}$.
 
@@ -301,12 +301,12 @@ plot(imp10)
 So, the first two principal components of Gabor texture features *are* indeed important. `Gabor1` is essentially the mean value across all texture features - an overall measure of stripedness - which underlines that we're doing the right thing when applying Gabor filters. This, and the information we gain from PCs #2 and #3, weren't visible at all in the original variable importance plot above.
 
 Also note that permutation on the untransformed feature resulting in a lot of extrapolation beyond the data-supported region due to the strong correlations between features. This is not the case here any more - the PCs are uncorrelated!
-  
-  
+
+
 ### Main effects: ALE plots
-  
+
 Next, we want to display **accumulated local effects (ALE) plots** as our preferred way of visualizing main effects of features in our black-box model ([@molnar.2019.iml.book]):
-  
+
 ```{r strucpcaaleprep}
 top3_terrain_vars <- stringr::str_subset(
   imp$results$feature, "Gabor",
