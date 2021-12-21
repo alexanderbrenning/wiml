@@ -19,7 +19,7 @@
 #'   object. The `warped_model`'s `predict` (and other) methods
 #'   allow the user to use a `warped_model` as if it had been fitted
 #'   using the transformed data.
-#' @example examples/warp_fitted_model.R
+#' @example man/examples/warp_fitted_model.R
 #' @export
 warp_fitted_model <- function(x, warper) {
   res <- list(fit = x, warper = warper)
@@ -50,7 +50,7 @@ warp_fitted_model <- function(x, warper) {
 #'   model, and the `predict` method of your machine-learning model
 #'   for details on additional arguments and the returned values.
 #' @importFrom MASS lda
-#' @example examples/predict.warped_model.R
+#' @example man/examples/predict.warped_model.R
 #' @export
 predict.warped_model <- function(object, newdata = NULL,
                                  force_unwarp = TRUE, ...) {

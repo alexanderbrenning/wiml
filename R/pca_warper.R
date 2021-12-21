@@ -27,7 +27,7 @@
 #'     is of size `length(xvars)+length(uvars)` and includes an
 #'     identity transformation `diag(length(uvars))` for the
 #'     features in `uvars`.
-#' @example examples/pca_warper.R
+#' @example man/examples/pca_warper.R
 #' @export
 pca_warper <- function(xdata, xvars, wvars = "PC", yvar, uvars = NULL,
                        center = TRUE, scale = TRUE,
@@ -121,7 +121,7 @@ pca_warper <- function(xdata, xvars, wvars = "PC", yvar, uvars = NULL,
 #' @param col,bp.col Colours of \code{biplot} labels and \code{barplot} bars.
 #' @param ... Currently not used.
 #' @return Returns `NULL`
-#' @example examples/pca_warper.R
+#' @example man/examples/pca_warper.R
 #' @export
 plot.pca_warper <- function(x,
                             which = c(1:2),
@@ -150,7 +150,7 @@ plot.pca_warper <- function(x,
 #' @seealso [stats::summary.prcomp()]
 #' @export
 #'
-#' @example examples/summary.pca_warper.R
+#' @example man/examples/summary.pca_warper.R
 summary.pca_warper <- function(object, ...) {
   x <- list(
     spca = summary(object$pca, ...),
@@ -171,7 +171,7 @@ summary.pca_warper <- function(object, ...) {
 #' @seealso [summary.pca_warper()], [stats::print.summary.prcomp()]
 #' @export
 #'
-#' @example examples/summary.pca_warper.R
+#' @example man/examples/summary.pca_warper.R
 print.summary.pca_warper <- function(x, ...) {
   cat("Principal components transformation for ",
       x$nxvars,

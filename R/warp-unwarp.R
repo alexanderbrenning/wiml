@@ -56,7 +56,7 @@ warp.warped_df <- function(x, warper, ...) {
 #' @seealso [warp()] for the forward transformation, and
 #'   [pca_warper()] for an example of a simple warper function based
 #'   on the principal components transformation.
-#' @example examples/pca_warper.R
+#' @example man/examples/pca_warper.R
 #' @export
 unwarp <- function(x, ...) {
   UseMethod("unwarp")
@@ -77,7 +77,7 @@ unwarp <- function(x, ...) {
 #' @seealso [warp()] for the forward transformation, and
 #'   [pca_warper()] for an example of a simple warper function based
 #'   on the principal components transformation.
-#' @example examples/pca_warper.R
+#' @example man/examples/pca_warper.R
 #' @export
 unwarp.warped_df <- function(x, warper, force_unwarp = FALSE, ...) {
   chkDots(...)

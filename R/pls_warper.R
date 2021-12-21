@@ -14,7 +14,7 @@
 #' @return An object of class `warper`, `rotation_warper` and `pls_warper`.
 #' @details The arguments
 #'     `pvars`, `xvars`, `uvars` and `yvar` should not overlap.
-#' @example examples/pls_warper.R
+#' @example man/examples/pls_warper.R
 #' @importFrom magrittr %>%
 #' @export
 pls_warper <- function(xdata, xvars, pvars, wvars = "resid", yvar, uvars = NULL,

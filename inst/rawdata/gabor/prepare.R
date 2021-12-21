@@ -4,9 +4,9 @@ UNMASKED <- TRUE
 prefix = ifelse(UNMASKED, "un", "")
 
 # Load data:
-load(here::here(paste0("data-raw/gabor/", prefix, "LN-clean.Rd")))
+load(here::here(paste0("inst/rawdata/gabor/", prefix, "LN-clean.Rd")))
 d_LN <- d
-load(here::here(paste0("data-raw/gabor/", prefix, "CAT-clean.Rd")))
+load(here::here(paste0("inst/rawdata/gabor/", prefix, "CAT-clean.Rd")))
 d_CAT <- d
 
 d_LN$area <- "LN"
@@ -38,4 +38,4 @@ cnms <- c("class",
 d <- d[, cnms]
 
 gabor <- d
-save(gabor, file = here::here("data/gabor.rda"))
+save(gabor, file = here::here("data/gabor.rda"), compress = "xz")
