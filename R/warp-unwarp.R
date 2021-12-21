@@ -154,17 +154,20 @@ formula.warped_model <- function(x, warped = TRUE, ...) {
 #'
 #' @param x Formula object.
 #' @param warper Warper object.
-#' @param ...
+#' @param ... Not used, ignored with a warning.
 #'
 #' @return The warped formula (e.g., based on principal components), or the
 #'   unwarped formula (using the original, untransformed variable names).
+#' @importFrom stats as.formula
+#' @importFrom purrr flatten
 #' @export
 #'
 #' @details Currently only "simple" formulas of the form `y ~ x1 + x2 + x3` etc.
 #'   are allowed - no `*`, `:`, `s()`, `I()`, `^2` or other operations that
 #'   are supported by some modeling functions.
 warp.formula <- function(x, warper, ...) {
-  xvars <- unlist(flatten(warper$xvars))
+  chkDots(...)
+  xvars <- unlist(purrr::flatten(warper$xvars))
   # check if all predictor variables are included in the Xvars / uvars set:
   if (!all(xvars %in% all.vars(x)[-1]))
     stop("Warper inconsistent with formula: not all Xvars are included in formula.")
@@ -175,12 +178,14 @@ warp.formula <- function(x, warper, ...) {
   sel_uvars <- warper$uvars[ warper$uvars %in% all.vars(x)[-1] ]
   wvars <- warper$Wvars[ !(warper$Wvars %in% warper$uvars) ]
 
-  as.formula(paste(all.vars(x)[1], "~",
+  stats::as.formula(paste(all.vars(x)[1], "~",
                    paste(c(wvars, sel_uvars), collapse = "+")))
 }
 
 
 #' @describeIn warp.formula Unwarp a model formula.
+#' @importFrom stats as.formula
+#' @importFrom purrr flatten
 #' @export
 unwarp.formula <- function(x, warper, ...) {
   wvars <- warper$Wvars[ !(warper$Wvars %in% warper$uvars) ]
@@ -192,8 +197,8 @@ unwarp.formula <- function(x, warper, ...) {
   # Only use uvars that are also in the formula since warper might contain
   # additional metadata variables such as x/y coordinates:
   sel_uvars <- warper$uvars[ warper$uvars %in% all.vars(x)[-1] ]
-  xvars <- unlist(flatten(warper$xvars))
+  xvars <- unlist(purrr::flatten(warper$xvars))
 
-  as.formula(paste(all.vars(x)[1], "~",
+  stats::as.formula(paste(all.vars(x)[1], "~",
                    paste(c(xvars, sel_uvars), collapse = "+")))
 }

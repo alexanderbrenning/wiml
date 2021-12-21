@@ -11,12 +11,15 @@ A data frame with 400 rows and 67 variables:
 variable.}
 \item{utmx,utmy}{UTM x and y coordinates - not to be used as
 predictors.}
-\item{b\emph{ij}}{value of Landsat band \emph{j} in image \emph{i}; images are
+\item{b12,b13,b14,b15,b16,b17,b22,b23,b24,b25,b26,b27,b32,b33,b34,b35,b36,b37,b42,b43,b44,b45,b46,b47,b52,b53,b54,b55,b56,b57,b62,b63,b64,b65,b66,b67,b72,b73,b74,b75,b76,b77,b82,b83,b84,b85,b86,b87}{\code{b}\emph{ij}
+is the value of Landsat band \emph{j} in image \emph{i}; images are
 numbered from early season = 1 to late season = 9; see Peña et al. (2017)
 for details, e.g. image dates.}
-\item{ndvi0\emph{i}}{NDVI values (representing vegetation vigour) for
-each image date.}
-\item{ndwi0\emph{i}}{NDWI values, i.e. a moisture index (representing moisture
+\item{ndvi01,ndvi02,ndvi03,ndvi04,ndvi05,ndvi06,ndvi07,ndvi08}{\code{ndvi0}\emph{i}
+is the NDVI value (representing vegetation vigour) for
+each image date \emph{i}.}
+\item{ndwi01,ndwi02,ndwi03,ndwi04,ndwi05,ndwi06,ndwi07,ndwi08}{\code{ndwi0}\emph{i}
+is the NDWI value for image date \emph{i}, i.e. a moisture index (representing moisture
 content of plants).} }
 }
 \source{

@@ -49,6 +49,7 @@ warp_fitted_model <- function(x, warper) {
 #' @seealso [warp_fitted_model()] for creating a warped machine-learning
 #'   model, and the `predict` method of your machine-learning model
 #'   for details on additional arguments and the returned values.
+#' @importFrom MASS lda
 #' @example examples/predict.warped_model.R
 #' @export
 predict.warped_model <- function(object, newdata = NULL,

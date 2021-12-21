@@ -1,6 +1,6 @@
 Package: wiml
 Title: Interpreting machine-learning models in transformed space
-Version: 0.0.0.9005
+Version: 0.0.0.9006
 Authors@R: 
     person(given = "Alexander",
            family = "Brenning",
@@ -28,9 +28,10 @@ Imports:
     dplyr,
     magrittr,
     lava,
+    MASS,
     iml (>= 0.10.1)
 Depends: 
-    R (>= 2.10)
+    R (>= 3.5.0)
 Suggests: 
     rmarkdown,
     knitr,

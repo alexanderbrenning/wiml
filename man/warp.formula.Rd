@@ -14,7 +14,7 @@
 
 \item{warper}{Warper object.}
 
-\item{...}{}
+\item{...}{Not used, ignored with a warning.}
 }
 \value{
 The warped formula (e.g., based on principal components), or the

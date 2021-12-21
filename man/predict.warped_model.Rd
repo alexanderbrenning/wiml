@@ -100,6 +100,7 @@ profile_plots(1)
 
 ### Repeat this for a linear discriminant analysis:
 
+library("MASS")
 fit <- MASS::lda(formula = fo, data = dtrain)
 warped_fit <- warp_fitted_model(fit, warper = wrp)
 
