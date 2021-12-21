@@ -333,9 +333,7 @@ plot(weffs)
 
 This is much tidier than the 46 ALE plots shown earlier, and domain experts are perfectly able to explain this to an educated audience.
 
-What about interactions? In untransformed feature space, it would be absolutely impossible to look at all the $p*(p-1)/2$ pairwise interactions; now we essentially
-
-We can also look at interactions between
+What about interactions? In untransformed feature space, it would be absolutely impossible to look at all the $p(p-1)/2$ pairwise interactions. In transformed PC space, in contrast, we can focus on the first PCs, and here I will show only the interaction of the first two PCs:
 
 ```{r strucpcapdp2d, cache = TRUE, cache.extra = do_cache()}
 weffs_2d_pdp <- FeatureEffect$new(
