@@ -12,6 +12,8 @@ warp(x, ...)
 \arguments{
 \item{x}{The object to be transformed, normally a data frame.}
 
+\item{...}{Additional arguments to be passed to the \code{warp} method.}
+
 \item{warper}{A \code{warper} object as, for example, created by \code{\link[=pca_warper]{pca_warper()}} for principal components transformations.}
 }
 \value{

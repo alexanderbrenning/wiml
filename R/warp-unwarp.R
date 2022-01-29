@@ -6,6 +6,7 @@
 #'
 #' @param x The object to be transformed, normally a data frame.
 #' @param warper A `warper` object as, for example, created by [pca_warper()] for principal components transformations.
+#' @param ... Additional arguments to be passed to the \code{warp} method.
 #' @describeIn warp.data.frame Does nothing - `warped_df` has already been transformed
 #' @return A data frame with features in the transformed (e.g., PCA) space.
 #' @seealso [unwarp()] for the inverse transformation, and
