@@ -4,7 +4,7 @@ subtitle: "A Remote-Sensing Case Study Using the Random Forest Classifier"
 author: Alexander Brenning
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{"The wiml Package: Transforming Feature Space to Interpret Machine Learning Models"}
+  %\VignetteIndexEntry{The `wiml` Package: Transforming Feature Space to Interpret Machine Learning Models}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 keywords:
@@ -268,8 +268,6 @@ As you can see, our small sample of four points actually consisted of PC data (f
 
 This means that we're ready to fool *any* model-agnostic interpretation tool - just don't tell'em that 'wfit' is not a real model!
   
-### Permutation variable importance
-
 We'll start with the permutation variable importance:
 
 ```{r strucpcaimp, cache = TRUE, cach.extra = do_cache()}
@@ -349,7 +347,7 @@ plot(weffs_2d_pdp)
 
 
 
-### References
+## References
 
 <div id="refs"></div>
   

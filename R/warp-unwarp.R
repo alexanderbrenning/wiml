@@ -5,29 +5,18 @@
 #' representation of the data, if a [pca_warper] is used.
 #'
 #' @param x The object to be transformed, normally a data frame.
-#' @param ... Additional arguments to be passed to the `warp` method.
+#' @param warper A `warper` object as, for example, created by [pca_warper()] for principal components transformations.
+#' @describeIn warp.data.frame Does nothing - `warped_df` has already been transformed
 #' @return A data frame with features in the transformed (e.g., PCA) space.
 #' @seealso [unwarp()] for the inverse transformation, and
 #'   [pca_warper()] for an example of a simple warper function based
 #'   on the principal component transformation.
 #' @export
 warp <- function(x, ...) {
-  UseMethod("warp", x)
+  UseMethod("warp")
 }
 
-#' Transform data from feature space into a transformed space
-#'
-#' `warp` methods apply the transformation \eqn{T} to data
-#' in feature space - the result is, for example, the principal components
-#' representation of the data, if a [pca_warper] is used.
-#'
-#' @param x The object to be transformed, normally a data frame.
 #' @param warper A `warper` object as, for example, created by [pca_warper()] for principal components transformations.
-#' @param ... Additional arguments to be passed to the \code{warp} method.
-#' @return A data frame with features in the transformed (e.g., PCA) space.
-#' @seealso [unwarp()] for the inverse transformation, and
-#'   [pca_warper()] for an example of a simple warper function based
-#'   on the principal component transformation.
 #' @export
 warp.data.frame <- function(x, warper, ...) {
   chkDots(...)
@@ -36,7 +25,6 @@ warp.data.frame <- function(x, warper, ...) {
   x
 }
 
-#' @describeIn warp.data.frame Does nothing - `warped_df` has already been transformed
 #' @export
 warp.warped_df <- function(x, warper, ...) {
   chkDots(...)
@@ -118,7 +106,7 @@ unwarp.data.frame <- function(x, warper = NULL, force_unwarp = FALSE, ...) {
 #'   what happens with `sperrorest`.
 #'
 #' @export
-warp.function <- function (x, warper, ...)
+warp_function <- function(x, warper, ...)
 {
   function(formula, data, ...) {
     data <- unwarp(data, warper = warper)
