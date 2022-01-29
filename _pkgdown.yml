@@ -3,3 +3,35 @@ url: https://alexanderbrenning.github.io/wiml
 template:
   bootstrap: 5
 
+authors:
+  Alexander Brenning:
+    href: https://geods.netlify.app/
+
+reference:
+  - title: Warp
+    description: Transform data from feature space into a transformed space
+    contents:
+      - starts_with("warp")
+      - ends_with("warp")
+      - contains("warped")
+  - title: Unwarp
+    description: Backtransform from transformed ('warped') to original feature space
+    contents:
+      - contains("unwarp")
+  - title: Inbound/Outbound
+    contents:
+      - starts_with("inbound")
+      - starts_with("outbound")
+  - title: Principal components transformation of feature space
+    contents:
+      - contains("pca")
+  - title: Partial least squares transformation of feature space
+    contents:
+      - contains("pls")
+  - title: Datasets
+    contents:
+      - gabor
+      - maipofields
+  - title: Package metadata
+    contents:
+      - wiml
