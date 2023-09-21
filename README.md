@@ -8,7 +8,7 @@ Main effects plots (such as partial dependence and ALE plots) can be confusing a
 
 ### Reference
 
-Brenning, A. (2021). Transforming Feature Space to Interpret Machine Learning Models. arXiv preprint, arXiv:2104.04295, <https://arxiv.org/abs/2104.04295>.
+Brenning, A. (2023). Interpreting machine-learning models in transformed feature space with an application to remote-sensing classification. *Machine Learning*, **112**, 3455--3471, <https://doi.org/10.1007/s10994-023-06327-8>
 
 ### My Personal Wishlist
 

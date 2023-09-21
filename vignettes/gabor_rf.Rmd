@@ -47,7 +47,7 @@ do_cache <- function() {
 
 This vignette walks you through most of the analyses performed for the paper that introduces the novel model interpretation approach implemented in the `wiml` package. Please refer to that paper for conceptual and formal details, and cite it when using `wiml` or referring to the methods and results presented herein.
 
-> @brenning.2021.wiml  Transforming Feature Space to Interpret Machine Learning Models. arXiv preprint, arXiv:2104.04295, <https://arxiv.org/abs/2104.04295>
+> @brenning.2023.wiml  Interpreting machine-learning models in transformed feature space with an application to remote-sensing classification. *Machine Learning*, **112**, 3455--3471, <https://doi.org/10.1007/s10994-023-06327-8>
 
 The `wiml` package serves as a thin wrapper around packages implementing ALE plots, partial dependence plots and other post-hoc model-agnostic interpretation tools. In this vignette, I will use `iml`; creating a vignette for use with `DALEX` is on my to-do list.
 
@@ -61,6 +61,7 @@ Several of the following steps are computationally expensive and will be slow ev
 Make sure that all required packages and their dependencies are installed and up-to-date. `wiml` is currently only available via Github, so you will have to use `devtools` to install it; I also recommend using the most recent development version of `iml`.
 
 ```{r load_packages, echo = FALSE, results = "hide", message=FALSE, warning=FALSE}
+options(warn = -1)
 # install.packages("devtools")
 # install_github("https://github.com/christophM/iml")
 # install_github("https://github.com/alexanderbrenning/wiml")
@@ -70,6 +71,8 @@ library("magrittr")
 library("randomForest")
 library("ggplot2")
 ggplot2::theme_set(theme_grey(base_size = 9))
+library("ggfortify")
+options(warn = 0)
 ```
 
 In addition, you will need the packages `stringr`, `purrr`, `ggcorrplot`, `ggfortify`. <!--- Packages for parallelization are optional: `future`, `future.callr`. To parallelize computations, you can (optionally) use the following call, specifying the number of workers appropriate for your computing environment:
